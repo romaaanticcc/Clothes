@@ -100,7 +100,7 @@ init_db()
 
 st.title("👗 智慧衣柜")
 
-tab_wardrobe, tab_add, tab_stats = st.tabs(["🧥 我的衣櫃", "➕ 新增衣服", "📊 數據分析"])
+tab_wardrobe, tab_add, tab_stats = st.tabs(["🧥 我的衣柜", "➕ 新增衣服", "📊 数据分析"])
 
 # ===== 分页 1: 我的衣柜 =====
 with tab_wardrobe:
