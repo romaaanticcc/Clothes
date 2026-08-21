@@ -7,7 +7,7 @@ from PIL import Image, ImageOps
 import io
 from streamlit_cropper import st_cropper
 
-# 支援 iPhone HEIC 格式
+# 支援 iPhone HEIC/HEIF 照片格式
 try:
     import pillow_heif
     pillow_heif.register_heif_opener()
@@ -22,15 +22,15 @@ UPLOAD_DIR = "uploaded_clothes"
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
-# ----------------- 自定義 CSS（還原 App 風格） -----------------
+# ----------------- 自定義 CSS（手機最佳化與綠色卡片風格） -----------------
 st.markdown("""
 <style>
-    /* 全域字體與背景微調 */
+    /* 全域背景 */
     .stApp {
         background-color: #f7f9f7;
     }
     
-    /* 頂部數據看板 */
+    /* 頂部數據條 */
     .top-stats {
         display: flex;
         align-items: center;
@@ -41,65 +41,40 @@ st.markdown("""
         margin-bottom: 8px;
     }
     
-    /* 橫向衣服卡片容器 */
-    .clothing-card {
-        background-color: #ffffff;
-        border-radius: 16px;
-        padding: 12px 14px;
-        margin-bottom: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        border: 1px solid #edf2ed;
-    }
-    
-    /* 卡片內文字樣式 */
+    /* 均價文字強調 */
     .cpw-price {
-        font-size: 19px;
+        font-size: 22px;
         font-weight: 800;
         color: #1b381b;
-        margin-bottom: 3px;
+        margin-top: 4px;
+        margin-bottom: 2px;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     .sub-info {
         font-size: 14px;
-        color: #7a8b7a;
-    }
-    
-    /* 圓形加號按鈕樣式 */
-    div[data-testid="stButton"] > button[kind="primary"] {
-        border-radius: 50%;
-        background-color: #34c759;
-        border: none;
-        color: white;
-        font-size: 20px;
-        font-weight: bold;
-        padding: 0;
-        height: 42px;
-        width: 42px;
-        box-shadow: 0 3px 6px rgba(52, 199, 89, 0.3);
-    }
-    div[data-testid="stButton"] > button[kind="primary"]:hover {
-        background-color: #2eb350;
-        color: white;
+        color: #637863;
+        margin-bottom: 10px;
     }
 
-    /* 詳情卡片與標籤樣式 */
+    /* 詳情頁卡片 */
     .detail-box {
         background-color: #ecf6ed;
-        border-radius: 18px;
-        padding: 18px 20px;
+        border-radius: 16px;
+        padding: 16px 18px;
         margin: 12px 0;
         color: #1e3a1e;
     }
     .detail-row {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         padding: 8px 0;
         font-size: 15px;
     }
     .season-pill {
         display: inline-block;
         background: #ffffff;
-        padding: 5px 12px;
+        padding: 5px 14px;
         border-radius: 8px;
         font-size: 14px;
         font-weight: 600;
@@ -126,6 +101,18 @@ def init_db():
             seasons TEXT DEFAULT '全季節'
         )
     ''')
+    # 確保升級相容
+    c.execute("PRAGMA table_info(clothes)")
+    existing_cols = [col[1] for col in c.fetchall()]
+    if 'category' not in existing_cols:
+        c.execute("ALTER TABLE clothes ADD COLUMN category TEXT DEFAULT '上衣'")
+    if 'purchase_year' not in existing_cols:
+        c.execute("ALTER TABLE clothes ADD COLUMN purchase_year TEXT DEFAULT '2026'")
+    if 'last_worn' not in existing_cols:
+        c.execute("ALTER TABLE clothes ADD COLUMN last_worn TEXT DEFAULT '暫無'")
+    if 'seasons' not in existing_cols:
+        c.execute("ALTER TABLE clothes ADD COLUMN seasons TEXT DEFAULT '全季節'")
+
     c.execute('''
         CREATE TABLE IF NOT EXISTS categories (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -226,11 +213,9 @@ init_db()
 # 頁面狀態
 if "selected_id" not in st.session_state:
     st.session_state.selected_id = None
-if "current_tab" not in st.session_state:
-    st.session_state.current_tab = "衣櫥"
 
 # ==========================================
-# 1. 詳情視圖 (點擊衣服進入)
+# 1. 詳情視圖 (點擊查看詳情後顯示)
 # ==========================================
 if st.session_state.selected_id is not None:
     item = get_clothing_by_id(st.session_state.selected_id)
@@ -241,20 +226,20 @@ if st.session_state.selected_id is not None:
     cid, name, price, wear_count, img_path, category, purchase_year, last_worn, seasons = item
     avg_cost = price / wear_count if wear_count > 0 else price
 
-    col_back, _ = st.columns([1, 4])
+    col_back, _ = st.columns([1, 3])
     with col_back:
-        if st.button("⬅ 返回"):
+        if st.button("⬅ 返回衣櫥", use_container_width=True):
             st.session_state.selected_id = None
             st.rerun()
 
-    st.subheader(f"衣物詳情 · {name}")
+    st.subheader(f"{name}")
 
     if os.path.exists(img_path):
         st.image(img_path, use_container_width=True)
 
     st.markdown(f"""
     <div class="detail-box">
-        <div style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">基本信息</div>
+        <div style="font-size: 17px; font-weight: bold; margin-bottom: 8px;">基本信息</div>
         <div class="detail-row"><span>👥 類別</span><span><b>{category}</b></span></div>
         <div class="detail-row"><span>💰 價格</span><span>¥{price:.2f}</span></div>
         <div class="detail-row"><span>🔄 穿著次數</span><span>{wear_count} 次</span></div>
@@ -263,12 +248,12 @@ if st.session_state.selected_id is not None:
         <div class="detail-row"><span>🛒 購買年份</span><span>{purchase_year}</span></div>
     </div>
     <div class="detail-box">
-        <div style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">季節信息</div>
+        <div style="font-size: 17px; font-weight: bold; margin-bottom: 8px;">季節信息</div>
         <div><span class="season-pill">✓ {seasons}</span></div>
     </div>
     """, unsafe_allow_html=True)
 
-    # 快捷次數操作
+    # 快捷打卡與撤銷
     c_btn1, c_btn2 = st.columns(2)
     with c_btn1:
         if st.button("➕ 今天穿 (+1)", key="dt_add", type="primary", use_container_width=True):
@@ -276,17 +261,17 @@ if st.session_state.selected_id is not None:
             st.toast("已更新穿著紀錄！")
             st.rerun()
     with c_btn2:
-        if st.button("➖ 撤回 (-1)", key="dt_sub", use_container_width=True, disabled=(wear_count <= 0)):
+        if st.button("➖ 撤銷 (-1)", key="dt_sub", use_container_width=True, disabled=(wear_count <= 0)):
             update_wear_count(cid, -1)
             st.rerun()
 
     with st.expander("⚙️ 編輯衣物資料 / 刪除"):
-        edit_name = st.text_input("名稱", value=name)
-        edit_price = st.number_input("價格 (¥)", value=float(price), step=10.0)
+        edit_name = st.text_input("衣服名稱", value=name)
+        edit_price = st.number_input("購買原價 (¥)", value=float(price), step=10.0)
         cats = get_categories()
         edit_cat = st.selectbox("分類", cats, index=cats.index(category) if category in cats else 0)
-        edit_year = st.text_input("年份", value=purchase_year)
-        edit_season = st.selectbox("季節", ["全季節", "春季", "夏季", "秋季", "冬季", "春夏", "秋冬"], index=0)
+        edit_year = st.text_input("購買年份", value=purchase_year)
+        edit_season = st.selectbox("適用季節", ["全季節", "春季", "夏季", "秋季", "冬季", "春夏", "秋冬"], index=0)
 
         e1, e2 = st.columns(2)
         with e1:
@@ -295,18 +280,17 @@ if st.session_state.selected_id is not None:
                 st.success("已更新！")
                 st.rerun()
         with e2:
-            if st.button("🗑️ 刪除衣服", type="secondary", use_container_width=True):
+            if st.button("🗑️ 刪除此衣物", type="secondary", use_container_width=True):
                 delete_clothing(cid, img_path)
                 st.session_state.selected_id = None
                 st.rerun()
 
 # ==========================================
-# 2. 主清單介面 (對標截圖風格)
+# 2. 主列表介面
 # ==========================================
 else:
-    # 頂部導航切換
     nav_selected = st.segmented_control(
-        "導航",
+        "導航選單",
         ["🧥 我的衣櫥", "➕ 新增衣服", "🏷️ 分類管理"],
         default="🧥 我的衣櫥",
         label_visibility="collapsed"
@@ -318,70 +302,66 @@ else:
         total_items = len(all_items)
         total_spent = sum(x[2] for x in all_items)
 
-        # 頂部統計指標
+        # 頂部數據看板
         st.markdown(f"""
         <div class="top-stats">
-            <span>👕 {total_items}</span>
-            <span>💰 ¥{total_spent:,.0f}</span>
+            <span>👕 {total_items} 件</span>
+            <span>💰 總投入 ¥{total_spent:,.0f}</span>
         </div>
         """, unsafe_allow_html=True)
 
-        # 頂部分類膠囊列 (Pills)
+        # 頂部分類膠囊 (Pills)
         categories = ["全部"] + get_categories()
         selected_cat = st.pills("分類篩選", categories, default="全部", label_visibility="collapsed")
         
         target_cat = selected_cat if selected_cat else "全部"
         displayed_items = get_clothes(target_cat)
 
-        # 類別與數量標題
         st.markdown(f"#### {target_cat} ({len(displayed_items)})")
 
         if not displayed_items:
-            st.info("該分類下暫無衣物，請點選「➕ 新增衣服」上傳！")
+            st.info("該分類下暫無衣物，請點選「➕ 新增衣服」拍照上傳！")
         else:
-            # 橫向卡片列表展示
+            # 手機友善卡片佈局
             for item in displayed_items:
                 cid, name, price, wear_count, img_path, cat, p_year, _, _ = item
                 avg_cost = price / wear_count if wear_count > 0 else price
 
-                with st.container():
-                    col_img, col_info, col_action = st.columns([1.1, 2.5, 0.8], vertical_alignment="center")
+                with st.container(border=True):
+                    if os.path.exists(img_path):
+                        st.image(img_path, use_container_width=True)
                     
-                    with col_img:
-                        if os.path.exists(img_path):
-                            st.image(img_path, use_container_width=True)
+                    st.markdown(f"### {name}")
+                    st.markdown(f"<div class='cpw-price'>¥{avg_cost:.2f} / 次</div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='sub-info'>原價 ¥{price:.0f} &nbsp;|&nbsp; 已穿 {wear_count} 次 &nbsp;|&nbsp; 標籤: {cat}</div>", unsafe_allow_html=True)
                     
-                    with col_info:
-                        st.markdown(f"<div class='cpw-price'>¥{avg_cost:.2f}/次</div>", unsafe_allow_html=True)
-                        st.markdown(f"<div class='sub-info'>¥{price:.0f} &nbsp;&nbsp; 已穿 {wear_count} 次</div>", unsafe_allow_html=True)
-                        if st.button("詳情 ❯", key=f"det_{cid}", type="tertiary"):
+                    b_col1, b_col2 = st.columns(2)
+                    with b_col1:
+                        if st.button("🔍 查看詳情", key=f"view_{cid}", use_container_width=True):
                             st.session_state.selected_id = cid
                             st.rerun()
-
-                    with col_action:
-                        if st.button("＋", key=f"btn_add_{cid}", type="primary", help="打卡穿著 +1"):
+                    with b_col2:
+                        if st.button("➕ 今天穿 (+1)", key=f"add_{cid}", type="primary", use_container_width=True):
                             update_wear_count(cid, 1)
-                            st.toast(f"已記錄！{name} 穿著 +1", icon="👕")
+                            st.toast(f"已記錄！{name} 穿著次數 +1", icon="👕")
                             st.rerun()
-                    
-                    st.divider()
 
-    # ===== 分頁：新增衣服 (含相機/上傳與裁切) =====
+    # ===== 分頁：新增衣服 =====
     elif nav_selected == "➕ 新增衣服":
-        st.subheader("新增衣物")
+        st.subheader("新增衣物資料")
         
-        item_name = st.text_input("衣物名稱", placeholder="例如：綠色無袖上衣")
+        item_name = st.text_input("衣物名稱 / 描述", placeholder="例如：條紋寬鬆襯衫")
         
         col1, col2 = st.columns(2)
         with col1:
-            item_price = st.number_input("購買價格 (¥)", min_value=0.1, step=10.0, value=55.0)
+            item_price = st.number_input("購買價格 (¥)", min_value=0.1, step=10.0, value=149.0)
             avail_cats = get_categories()
             item_cat = st.selectbox("選擇分類", avail_cats)
         with col2:
             item_year = st.text_input("購買年份", value=str(datetime.now().year))
             item_seasons = st.selectbox("適用季節", ["全季節", "春季", "夏季", "秋季", "冬季", "春夏", "秋冬"])
 
-        upload_type = st.radio("照片來源", ["📸 相機拍照", "📁 相簿上傳"], horizontal=True)
+        upload_type = st.radio("選擇圖片來源", ["📸 相機拍照", "📁 相簿上傳"], horizontal=True)
         raw_img_bytes = None
         
         if "拍照" in upload_type:
@@ -389,14 +369,14 @@ else:
             if cam:
                 raw_img_bytes = cam.getvalue()
         else:
-            up = st.file_uploader("選擇照片", type=["jpg", "jpeg", "png", "heic", "heif"])
+            up = st.file_uploader("選擇照片 (支援 JPG/PNG/HEIC)", type=["jpg", "jpeg", "png", "heic", "heif"])
             if up:
                 raw_img_bytes = up.getvalue()
 
         cropped_img = None
         if raw_img_bytes:
             try:
-                st.write("✂️ **拖曳選框進行圖片裁切：**")
+                st.write("✂️ **拖曳選框裁切衣服區域：**")
                 img_obj = Image.open(io.BytesIO(raw_img_bytes))
                 img_obj = ImageOps.exif_transpose(img_obj)
                 
@@ -404,16 +384,16 @@ else:
                     img_obj,
                     realtime_update=True,
                     box_color="#34c759",
-                    aspect_ratio=(3, 4)
+                    aspect_ratio=None
                 )
             except Exception:
-                st.error("圖片讀取失敗，請確認檔案格式是否正確。")
+                st.error("圖片載入失敗，請確認檔案格式是否正確。")
 
-        if st.button("💾 儲存並加入衣櫃", type="primary", use_container_width=True):
+        if st.button("💾 儲存至衣櫃", type="primary", use_container_width=True):
             if not item_name.strip():
                 st.error("請輸入衣服名稱")
             elif cropped_img is None:
-                st.error("請提供衣物照片")
+                st.error("請上傳並確認衣物照片")
             else:
                 add_clothing(item_name.strip(), item_price, item_cat, item_year, item_seasons, cropped_img)
                 st.success("✅ 成功加入衣櫃！")
@@ -421,8 +401,8 @@ else:
 
     # ===== 分頁：分類管理 =====
     elif nav_selected == "🏷️ 分類管理":
-        st.subheader("分類設定")
-        new_c = st.text_input("自定義新分類名稱", placeholder="例如：洋裝、運動服")
+        st.subheader("自定義分類標籤")
+        new_c = st.text_input("輸入新分類名稱", placeholder="例如：運動服、居家服、復古款")
         if st.button("➕ 新增分類"):
             if new_c.strip():
                 add_category(new_c)
@@ -430,5 +410,5 @@ else:
                 st.rerun()
         
         st.divider()
-        st.write("**目前分類標籤：**")
+        st.write("**目前所有分類標籤：**")
         st.write("、".join([f"`{c}`" for c in get_categories()]))
