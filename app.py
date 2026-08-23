@@ -29,7 +29,7 @@ def get_image_base64(img_path):
             return base64.b64encode(img_file.read()).decode()
     return ""
 
-# ----------------- 终极适配红米/安卓手机的 CSS 样式 -----------------
+# ----------------- 终极完美红米适配：卡片放大 + 右侧黑绿红三按钮无缝贴合 -----------------
 st.markdown("""
 <style>
     .stApp, .main {
@@ -37,7 +37,7 @@ st.markdown("""
         overflow-x: hidden !important;
     }
 
-    /* 适配红米手机窄屏，拉满左右边距 */
+    /* 适配红米/安卓手机，拉满宽度并禁用横向滚动条 */
     .main .block-container {
         padding-left: 0.4rem !important;
         padding-right: 0.4rem !important;
@@ -72,35 +72,35 @@ st.markdown("""
     }
 
     /* ========================================================= */
-    /* 完美单行卡片容器：左侧内容自适应，右侧 3 按钮绝对靠右不换行 */
+    /* 放大一点点的精致白色卡片框：左侧信息，右侧黑绿红三按钮紧贴 */
     /* ========================================================= */
-    .mobile-card-row {
+    .uniform-card {
         display: flex;
         align-items: center;
         justify-content: space-between;
         background-color: #ffffff;
-        border-radius: 16px;
-        padding: 8px 10px;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
-        border: 1px solid #f0f4f0;
-        margin-bottom: 10px;
+        border-radius: 20px;          /* 更圆润的视觉 */
+        padding: 12px 14px;          /* 上下左右空间放大一点点 */
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+        border: 1px solid #edf2ed;
+        margin-bottom: 12px;
         width: 100%;
         box-sizing: border-box;
-        gap: 8px;
+        gap: 10px;
     }
 
     .card-left-group {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         flex: 1;
-        min-width: 0; /* 允许内部文本收缩，防止撑破 */
+        min-width: 0;
     }
 
     .card-img {
-        width: 48px;
-        height: 48px;
-        border-radius: 10px;
+        width: 58px;                 /* 图片稍微放大一点点 */
+        height: 58px;
+        border-radius: 12px;
         object-fit: cover;
         flex-shrink: 0;
         background-color: #f0f0f0;
@@ -113,47 +113,47 @@ st.markdown("""
     }
 
     .cpw-price {
-        font-size: 15px;
+        font-size: 16px;
         font-weight: 800;
         color: #1c1c1e;
-        margin-bottom: 1px;
+        margin-bottom: 2px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
     .sub-info {
-        font-size: 11px;
+        font-size: 12px;
         color: #8e8e93;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    /* 右侧按钮组固定在同一行，绝不换行 */
+    /* 右侧按钮组：紧紧贴在卡片最右侧，绝不换行、没有多余间隙 */
     .card-right-buttons {
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;                    /* 按钮之间的微小间距，无空白 */
         flex-shrink: 0;
     }
 
-    /* 圆形按钮统一样式 */
-    .mobile-card-row button {
+    /* 内部原生按钮完美变身成精致小圆球 */
+    .card-right-buttons button {
         border-radius: 50% !important;
-        width: 30px !important;
-        height: 30px !important;
-        min-height: 30px !important;
+        width: 32px !important;
+        height: 32px !important;
+        min-height: 32px !important;
         padding: 0 !important;
         margin: 0 !important;
         border: none !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.12) !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15) !important;
     }
 
-    .mobile-card-row button * {
+    .card-right-buttons button * {
         color: #ffffff !important;
         font-weight: 800 !important;
         line-height: 1 !important;
@@ -161,34 +161,34 @@ st.markdown("""
         padding: 0 !important;
     }
 
-    .mobile-card-row button:active {
+    .card-right-buttons button:active {
         opacity: 0.7 !important;
         transform: scale(0.9) !important;
     }
 
     /* 1. 黑色详情按钮 */
-    .btn-det button {
+    .btn-black button {
         background-color: #2c2c2e !important;
     }
-    .btn-det button * {
+    .btn-black button * {
         font-size: 14px !important;
         font-family: serif !important;
         font-style: italic !important;
     }
 
-    /* 2. 绿色 + 号按钮 */
-    .btn-add button {
+    /* 2. 绿色加号按钮 */
+    .btn-green button {
         background-color: #34c759 !important;
     }
-    .btn-add button * {
+    .btn-green button * {
         font-size: 18px !important;
     }
 
-    /* 3. 蓝色 - 号按钮（用蓝色或不同色区分开，避免红色太刺眼或与删除混淆） */
-    .btn-sub button {
-        background-color: #007aff !important;
+    /* 3. 红色减号按钮 */
+    .btn-red button {
+        background-color: #ff3b30 !important;
     }
-    .btn-sub button * {
+    .btn-red button * {
         font-size: 18px !important;
     }
 
@@ -388,7 +388,7 @@ if st.session_state.selected_id is not None:
                 st.rerun()
 
 # ==========================================
-# 2. 主界面 (完美适配红米等窄屏手机)
+# 2. 主界面
 # ==========================================
 else:
     nav_selected = st.segmented_control(
@@ -426,9 +426,9 @@ else:
                 avg_cost = price / wear_count if wear_count > 0 else price
                 img_b64 = get_image_base64(img_path)
 
-                # 外层 HTML 卡片：左侧放图片文字，右侧预留出 3 个按钮的空间
+                # 整体白色卡片大框：左侧放图片与价格信息，右侧留空给嵌入的按钮
                 st.markdown(f"""
-                <div class="mobile-card-row">
+                <div class="uniform-card">
                     <div class="card-left-group">
                         <img src="data:image/jpeg;base64,{img_b64}" class="card-img">
                         <div class="card-text-box">
@@ -436,31 +436,30 @@ else:
                             <div class="sub-info">¥{price:.0f} 已穿 {wear_count} 次</div>
                         </div>
                     </div>
-                    <div style="width: 105px; flex-shrink: 0;"></div>
+                    <div class="card-right-buttons" id="slot-{cid}"></div>
                 </div>
                 """, unsafe_allow_html=True)
 
-                # 用原生紧凑列将 3 个不同颜色的圆形按钮精确压在卡片右侧上方
-                # 利用绝对定位或负外边距让按钮精准悬浮在右侧
-                col_dummy, col_det, col_add, col_sub = st.columns([0.48, 0.17, 0.17, 0.17])
+                # 在当前行右侧精确放置 3 个紧凑且不同颜色的圆形按钮（黑、绿、红）
+                _, c_det, c_add, c_sub = st.columns([0.55, 0.15, 0.15, 0.15])
                 
-                with col_det:
-                    st.markdown('<div class="btn-det">', unsafe_allow_html=True)
+                with c_det:
+                    st.markdown('<div class="btn-black">', unsafe_allow_html=True)
                     if st.button("i", key=f"det_{cid}"):
                         st.session_state.selected_id = cid
                         st.rerun()
                     st.markdown('</div>', unsafe_allow_html=True)
 
-                with col_add:
-                    st.markdown('<div class="btn-add">', unsafe_allow_html=True)
+                with c_add:
+                    st.markdown('<div class="btn-green">', unsafe_allow_html=True)
                     if st.button("＋", key=f"add_{cid}"):
                         update_wear_count(cid, 1)
                         st.toast("已记录穿着！", icon="👕")
                         st.rerun()
                     st.markdown('</div>', unsafe_allow_html=True)
 
-                with col_sub:
-                    st.markdown('<div class="btn-sub">', unsafe_allow_html=True)
+                with c_sub:
+                    st.markdown('<div class="btn-red">', unsafe_allow_html=True)
                     if st.button("－", key=f"sub_{cid}", disabled=(wear_count <= 0)):
                         update_wear_count(cid, -1)
                         st.toast("已撤回穿着！")
