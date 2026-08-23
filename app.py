@@ -2,7 +2,6 @@ import streamlit as st
 import sqlite3
 import os
 import uuid
-import base64
 from datetime import datetime
 from PIL import Image, ImageOps
 import io
@@ -23,161 +22,88 @@ UPLOAD_DIR = "uploaded_clothes"
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
-def get_image_base64(img_path):
-    if os.path.exists(img_path):
-        with open(img_path, "rb") as img_file:
-            return base64.b64encode(img_file.read()).decode()
-    return ""
-
-# ----------------- 100% 复刻图 2 的 CSS 样式 -----------------
+# ----------------- 自定义 CSS（还原 App 风格） -----------------
 st.markdown("""
 <style>
-    .stApp, .main {
+    /* 全局字体与背景微调 */
+    .stApp {
         background-color: #f7f9f7;
-        overflow-x: hidden !important;
     }
-
-    /* 完美适配红米/安卓手机页面，锁定宽度、防止横向滚动 */
-    .main .block-container {
-        padding-left: 0.5rem !important;
-        padding-right: 0.5rem !important;
-        padding-top: 0.5rem !important;
-        max-width: 420px !important;
-        margin: 0 auto !important;
-        overflow-x: hidden !important;
-    }
-
+    
+    /* 顶部数据看板 */
     .top-stats {
         display: flex;
         align-items: center;
         gap: 16px;
         font-size: 18px;
         font-weight: 700;
-        color: #1b381b;
-        margin-bottom: 12px;
-        margin-top: 4px;
+        color: #2b512a;
+        margin-bottom: 8px;
     }
-
-    div[data-testid="stPills"] button {
-        border-radius: 20px !important;
-        border: none !important;
-        background-color: #e8eae8 !important;
-        color: #333333 !important;
-        font-size: 13px !important;
-        padding: 4px 12px !important;
-    }
-    div[data-testid="stPills"] button[aria-selected="true"] {
-        background-color: #34c759 !important;
-        color: white !important;
-    }
-
-    /* ========================================================= */
-    /* 图 2 同款精致放大卡片容器 */
-    /* ========================================================= */
-    .wardrobe-card-container {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background-color: #ffffff;
-        border-radius: 22px;          /* 更圆润的视觉 */
-        padding: 14px 18px;          /* 上下左右空间适当放大 */
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-        border: 1px solid #edf2ed;
-        margin-bottom: 14px;
-        width: 100%;
-        box-sizing: border-box;
-        gap: 12px;
-    }
-
-    .card-left-group {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        flex: 1;
-        min-width: 0;
-        cursor: pointer;
-    }
-
-    .card-img {
-        width: 62px;                 /* 图片适度放大 */
-        height: 62px;
-        border-radius: 12px;
-        object-fit: cover;
-        flex-shrink: 0;
-        background-color: #f0f0f0;
-    }
-
-    .card-text-box {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-    }
-
-    .cpw-price {
-        font-size: 17px;
-        font-weight: 800;
-        color: #1c1c1e;
-        margin-bottom: 3px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .sub-info {
-        font-size: 13px;
-        color: #8e8e93;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    /* 图 2 右侧的绿色圆圈加号按钮专属样式 */
-    .card-right-btn {
-        flex-shrink: 0;
-    }
-
-    .card-right-btn button {
-        border-radius: 50% !important;
-        width: 38px !important;
-        height: 38px !important;
-        min-height: 38px !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        background-color: #34c759 !important; /* 图2同款绿色 */
-        border: none !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 0 3px 8px rgba(52, 199, 89, 0.3) !important;
-    }
-
-    .card-right-btn button * {
-        color: #ffffff !important;
-        font-size: 20px !important;
-        font-weight: 800 !important;
-        line-height: 1 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    .card-right-btn button:active {
-        transform: scale(0.9) !important;
-    }
-
-    /* 详情页区块 */
-    .detail-box {
+    
+    /* 横向衣服卡片容器 */
+    .clothing-card {
         background-color: #ffffff;
         border-radius: 16px;
-        padding: 16px 18px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        border: 1px solid #edf2ed;
+    }
+    
+    /* 卡片内文字样式 */
+    .cpw-price {
+        font-size: 19px;
+        font-weight: 800;
+        color: #1b381b;
+        margin-bottom: 3px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .sub-info {
+        font-size: 14px;
+        color: #7a8b7a;
+    }
+    
+    /* 圆形加号按钮样式 */
+    div[data-testid="stButton"] > button[kind="primary"] {
+        border-radius: 50%;
+        background-color: #34c759;
+        border: none;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+        padding: 0;
+        height: 42px;
+        width: 42px;
+        box-shadow: 0 3px 6px rgba(52, 199, 89, 0.3);
+    }
+    div[data-testid="stButton"] > button[kind="primary"]:hover {
+        background-color: #2eb350;
+        color: white;
+    }
+
+    /* 详情卡片与标签样式 */
+    .detail-box {
+        background-color: #ecf6ed;
+        border-radius: 18px;
+        padding: 18px 20px;
         margin: 12px 0;
         color: #1e3a1e;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
     .detail-row {
         display: flex;
         justify-content: space-between;
         padding: 8px 0;
         font-size: 15px;
+    }
+    .season-pill {
+        display: inline-block;
+        background: #ffffff;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #2b512a;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -206,7 +132,7 @@ def init_db():
             name TEXT UNIQUE
         )
     ''')
-    defaults = ['上衣', '裤子', '外套', '洋装', '鞋靴', '包包配件', '裙子', '配件']
+    defaults = ['上衣', '裤子', '裙子', '外套', '鞋靴', '配件']
     for cat in defaults:
         c.execute("INSERT OR IGNORE INTO categories (name) VALUES (?)", (cat,))
     conn.commit()
@@ -216,7 +142,9 @@ def get_categories():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute("SELECT name FROM categories ORDER BY id ASC")
-    return [r[0] for r in c.fetchall()]
+    rows = [r[0] for r in c.fetchall()]
+    conn.close()
+    return rows
 
 def add_category(cat_name):
     if cat_name.strip():
@@ -232,7 +160,7 @@ def add_clothing(name, price, category, purchase_year, seasons, cropped_image):
     filename = f"{uuid.uuid4().hex}.jpg"
     file_path = os.path.join(UPLOAD_DIR, filename)
     cropped_image.convert('RGB').save(file_path, "JPEG", quality=90)
-
+    
     c.execute(
         '''INSERT INTO clothes (name, price, wear_count, image_path, created_at, category, purchase_year, last_worn, seasons)
            VALUES (?, ?, 0, ?, ?, ?, ?, '暂无', ?)''',
@@ -283,8 +211,10 @@ def update_clothing_info(cid, name, price, category, year, seasons):
 
 def delete_clothing(clothing_id, image_path):
     if os.path.exists(image_path):
-        try: os.remove(image_path)
-        except Exception: pass
+        try:
+            os.remove(image_path)
+        except Exception:
+            pass
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute("DELETE FROM clothes WHERE id = ?", (clothing_id,))
@@ -293,11 +223,14 @@ def delete_clothing(clothing_id, image_path):
 
 init_db()
 
+# 页面状态
 if "selected_id" not in st.session_state:
     st.session_state.selected_id = None
+if "current_tab" not in st.session_state:
+    st.session_state.current_tab = "衣橱"
 
 # ==========================================
-# 1. 详情视图
+# 1. 详情视图 (点击衣服进入)
 # ==========================================
 if st.session_state.selected_id is not None:
     item = get_clothing_by_id(st.session_state.selected_id)
@@ -308,9 +241,11 @@ if st.session_state.selected_id is not None:
     cid, name, price, wear_count, img_path, category, purchase_year, last_worn, seasons = item
     avg_cost = price / wear_count if wear_count > 0 else price
 
-    if st.button("⬅ 返回"):
-        st.session_state.selected_id = None
-        st.rerun()
+    col_back, _ = st.columns([1, 4])
+    with col_back:
+        if st.button("⬅ 返回"):
+            st.session_state.selected_id = None
+            st.rerun()
 
     st.subheader(f"衣物详情 · {name}")
 
@@ -327,8 +262,13 @@ if st.session_state.selected_id is not None:
         <div class="detail-row"><span>🏷️ 单次成本</span><span><b>¥{avg_cost:.2f} / 次</b></span></div>
         <div class="detail-row"><span>🛒 购买年份</span><span>{purchase_year}</span></div>
     </div>
+    <div class="detail-box">
+        <div style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">季节信息</div>
+        <div><span class="season-pill">✓ {seasons}</span></div>
+    </div>
     """, unsafe_allow_html=True)
 
+    # 快捷次数操作
     c_btn1, c_btn2 = st.columns(2)
     with c_btn1:
         if st.button("➕ 今天穿 (+1)", key="dt_add", type="primary", use_container_width=True):
@@ -361,80 +301,77 @@ if st.session_state.selected_id is not None:
                 st.rerun()
 
 # ==========================================
-# 2. 主界面 (100% 复刻图2：左侧点图文进详情，右侧单加号)
+# 2. 主清单界面 (对标截图风格)
 # ==========================================
 else:
+    # 顶部导航切换
     nav_selected = st.segmented_control(
         "导航",
-        ["👚 我的衣橱", "➕ 新增衣服", "🏷️ 分类管理"],
-        default="👚 我的衣橱",
+        ["🧥 我的衣橱", "➕ 新增衣服", "🏷️ 分类管理"],
+        default="🧥 我的衣橱",
         label_visibility="collapsed"
     )
 
-    if nav_selected == "👚 我的衣橱":
+    # ===== 分页：衣橱清单 =====
+    if nav_selected == "🧥 我的衣橱":
         all_items = get_clothes("全部")
         total_items = len(all_items)
         total_spent = sum(x[2] for x in all_items)
 
+        # 顶部统计指标
         st.markdown(f"""
         <div class="top-stats">
             <span>👕 {total_items}</span>
-            <span>💰 {total_spent:,.0f}</span>
+            <span>💰 ¥{total_spent:,.0f}</span>
         </div>
         """, unsafe_allow_html=True)
 
+        # 顶部胶囊列 (Pills)
         categories = ["全部"] + get_categories()
         selected_cat = st.pills("分类筛选", categories, default="全部", label_visibility="collapsed")
-
+        
         target_cat = selected_cat if selected_cat else "全部"
         displayed_items = get_clothes(target_cat)
 
-        st.markdown(f"### {target_cat} ({len(displayed_items)})")
+        # 类别与数量标题
+        st.markdown(f"#### {target_cat} ({len(displayed_items)})")
 
         if not displayed_items:
-            st.info("该分类下暂无衣物，请选择「➕ 新增衣服」上传！")
+            st.info("该分类下暂无衣物，请点击「➕ 新增衣服」上传！")
         else:
+            # 横向卡片列表展示
             for item in displayed_items:
                 cid, name, price, wear_count, img_path, cat, p_year, _, _ = item
                 avg_cost = price / wear_count if wear_count > 0 else price
-                img_b64 = get_image_base64(img_path)
 
-                # 将整行划分为两列：左侧图文区（点击进入详情），右侧绿色加号按钮
-                col_left, col_right = st.columns([0.82, 0.18], vertical_alignment="center")
-
-                with col_left:
-                    # 用 Streamlit 的 container 承载左侧，并赋予点击进入详情的功能
-                    with st.container():
-                        st.markdown(f"""
-                        <div class="wardrobe-card-container" style="margin-bottom:0px; border:none; box-shadow:none; padding:0; background:transparent;">
-                            <div class="card-left-group">
-                                <img src="data:image/jpeg;base64,{img_b64}" class="card-img">
-                                <div class="card-text-box">
-                                    <div class="cpw-price">¥{avg_cost:.2f}/次</div>
-                                    <div class="sub-info">¥{price:.0f} 已穿 {wear_count} 次</div>
-                                </div>
-                            </div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                        
-                        # 隐形点击触发：点击左侧图文直接进入详情页
-                        if st.button("查看详情", key=f"det_{cid}", type="tertiary", use_container_width=True):
+                with st.container():
+                    col_img, col_info, col_action = st.columns([1.1, 2.5, 0.8], vertical_alignment="center")
+                    
+                    with col_img:
+                        if os.path.exists(img_path):
+                            st.image(img_path, use_container_width=True)
+                    
+                    with col_info:
+                        st.markdown(f"<div class='cpw-price'>¥{avg_cost:.2f}/次</div>", unsafe_allow_html=True)
+                        st.markdown(f"<div class='sub-info'>¥{price:.0f} &nbsp;&nbsp; 已穿 {wear_count} 次</div>", unsafe_allow_html=True)
+                        if st.button("详情 ❯", key=f"det_{cid}", type="tertiary"):
                             st.session_state.selected_id = cid
                             st.rerun()
 
-                with col_right:
-                    # 右侧图2同款绿色加号圆钮（穿衣次数 +1）
-                    st.markdown('<div class="card-right-btn">', unsafe_allow_html=True)
-                    if st.button("＋", key=f"add_{cid}"):
-                        update_wear_count(cid, 1)
-                        st.toast("已记录穿着！", icon="👕")
-                        st.rerun()
-                    st.markdown('</div>', unsafe_allow_html=True)
+                    with col_action:
+                        if st.button("＋", key=f"btn_add_{cid}", type="primary", help="打卡穿着 +1"):
+                            update_wear_count(cid, 1)
+                            st.toast(f"已记录！{name} 穿着 +1", icon="👕")
+                            st.rerun()
+                    
+                    st.divider()
 
+    # ===== 分页：新增衣服 (含相机/上传与裁切) =====
     elif nav_selected == "➕ 新增衣服":
         st.subheader("新增衣物")
+        
         item_name = st.text_input("衣物名称", placeholder="例如：绿色无袖上衣")
-
+        
         col1, col2 = st.columns(2)
         with col1:
             item_price = st.number_input("购买价格 (¥)", min_value=0.1, step=10.0, value=55.0)
@@ -442,27 +379,32 @@ else:
             item_cat = st.selectbox("选择分类", avail_cats)
         with col2:
             item_year = st.text_input("购买年份", value=str(datetime.now().year))
-            item_seasons = st.selectbox("使用季节", ["全季节", "春季", "夏季", "秋季", "冬季", "春夏", "秋冬"])
+            item_seasons = st.selectbox("适用季节", ["全季节", "春季", "夏季", "秋季", "冬季", "春夏", "秋冬"])
 
-        st.write("📁 **相册上传**")
-        up = st.file_uploader("选择照片", type=["jpg", "jpeg", "png", "heic", "heif"], label_visibility="collapsed")
-        raw_img_bytes = up.getvalue() if up else None
-
-        if up:
-            st.success("✅ 图片上传成功！")
+        upload_type = st.radio("照片来源", ["📸 相机拍照", "📁 相册上传"], horizontal=True)
+        raw_img_bytes = None
+        
+        if "拍照" in upload_type:
+            cam = st.camera_input("拍照")
+            if cam:
+                raw_img_bytes = cam.getvalue()
+        else:
+            up = st.file_uploader("选择照片", type=["jpg", "jpeg", "png", "heic", "heif"])
+            if up:
+                raw_img_bytes = up.getvalue()
 
         cropped_img = None
         if raw_img_bytes:
             try:
-                st.write("✂️ **拖拽选框进行自由裁切：**")
+                st.write("✂️ **拖拽选框进行图片裁切：**")
                 img_obj = Image.open(io.BytesIO(raw_img_bytes))
                 img_obj = ImageOps.exif_transpose(img_obj)
-
+                
                 cropped_img = st_cropper(
                     img_obj,
                     realtime_update=True,
                     box_color="#34c759",
-                    aspect_ratio=None
+                    aspect_ratio=(3, 4)
                 )
             except Exception:
                 st.error("图片读取失败，请确认文件格式是否正确。")
@@ -477,15 +419,16 @@ else:
                 st.success("✅ 成功加入衣橱！")
                 st.rerun()
 
+    # ===== 分页：分类管理 =====
     elif nav_selected == "🏷️ 分类管理":
         st.subheader("分类设置")
-        new_c = st.text_input("自定义新分类名称", placeholder="例如：连衣裙、运动服")
+        new_c = st.text_input("自定义新分类名称", placeholder="例如：洋装、运动服")
         if st.button("➕ 新增分类"):
             if new_c.strip():
                 add_category(new_c)
                 st.toast(f"已新增分类：{new_c}")
                 st.rerun()
-
+        
         st.divider()
         st.write("**当前分类标签：**")
         st.write("、".join([f"`{c}`" for c in get_categories()]))
