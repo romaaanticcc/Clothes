@@ -38,8 +38,8 @@ st.markdown("""
 
     /* 缩小页面边距，锁定手机屏幕宽度 */
     .main .block-container {
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
+        padding-left: 0.8rem !important;
+        padding-right: 0.8rem !important;
         padding-top: 0.5rem !important;
         max-width: 450px !important;
         margin: 0 auto !important;
@@ -71,113 +71,72 @@ st.markdown("""
         color: white !important;
     }
 
-    /* 卡片相对定位容器 */
-    .card-container {
-        position: relative;
-        width: 100%;
-        margin-bottom: 14px;
-    }
-
-    /* 白色圆角卡片基础视觉层 */
-    .app-card {
+    /* 白色圆角卡片基础外框 */
+    .card-box {
         background-color: #ffffff;
         border-radius: 20px;
-        padding: 14px 16px;
+        padding: 12px 14px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         border: 1px solid #f2f4f2;
         display: flex;
         align-items: center;
-        justify-content: space-between;
         width: 100%;
         box-sizing: border-box;
     }
 
-    .app-card-left {
+    .card-left {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 14px;
         flex: 1;
         min-width: 0;
     }
 
     /* 图片缩略图 */
-    .app-card-img {
-        width: 68px;
-        height: 68px;
+    .card-img {
+        width: 64px;
+        height: 64px;
         border-radius: 12px;
         object-fit: cover;
         flex-shrink: 0;
         background-color: #f8f8f8;
     }
 
-    /* 卡片中间文字布局 */
-    .app-card-info {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-
     .cpw-price {
         font-size: 18px;
         font-weight: 800;
         color: #1c1c1e;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     .sub-info {
-        font-size: 14px;
+        font-size: 13px;
         color: #8e8e93;
     }
 
-    /* 绿色圆圈加号样式 */
-    .add-icon-circle {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background-color: #34c759;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-        font-weight: 400;
-        flex-shrink: 0;
-        box-shadow: 0 2px 6px rgba(52, 199, 89, 0.25);
-    }
-
-    /* 彻底重置透明交互按钮，消除文本外溢 */
-    div[data-testid="element-container"]:has(.hide-btn) {
-        position: absolute !important;
-        top: 0 !important;
-        height: 100% !important;
-        z-index: 10 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    /* 左侧透明按钮点击区（进入详情） */
-    .overlay-left {
-        left: 0 !important;
-        width: 80% !important;
-    }
-
-    /* 右侧透明按钮点击区（加一次） */
-    .overlay-right {
-        right: 0 !important;
-        width: 20% !important;
-    }
-
-    /* 强制抹除 Streamlit 原生按钮的一切视觉效果与文字 */
-    .hide-btn button {
-        width: 100% !important;
-        height: 100% !important;
+    /* 详情文本按钮样式（绿加号左边） */
+    div[data-testid="column"]:nth-child(2) button[kind="tertiary"] {
+        color: #8e8e93 !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        padding: 0 4px !important;
         background: transparent !important;
         border: none !important;
-        color: transparent !important;
-        font-size: 0px !important;
+        min-height: 0 !important;
+    }
+
+    /* 绿色加号按钮样式 */
+    div[data-testid="column"]:nth-child(3) button[kind="primary"] {
+        border-radius: 50% !important;
+        width: 38px !important;
+        height: 38px !important;
         padding: 0 !important;
-        box-shadow: none !important;
+        background-color: #34c759 !important;
+        border: none !important;
+        box-shadow: 0 2px 6px rgba(52, 199, 89, 0.25) !important;
+        font-size: 22px !important;
+        line-height: 38px !important;
     }
 
     /* 详情页专属区块 */
@@ -416,36 +375,34 @@ else:
                 avg_cost = price / wear_count if wear_count > 0 else price
                 img_b64 = get_image_base64(img_path)
 
-                # 完美复刻目标卡片 DOM 结构
-                st.markdown(f"""
-                <div class="card-container">
-                    <div class="app-card">
-                        <div class="app-card-left">
-                            <img src="data:image/jpeg;base64,{img_b64}" class="app-card-img">
-                            <div class="app-card-info">
-                                <div class="cpw-price">¥{avg_cost:.2f}/次</div>
-                                <div class="sub-info">¥{price:.0f} 已穿 {wear_count} 次</div>
-                            </div>
+                # 将整个卡片分为 3 列：[左侧信息, 中间“详情”, 右侧“＋加号”]
+                c1, c2, c3 = st.columns([0.65, 0.20, 0.15], vertical_alignment="center")
+
+                with c1:
+                    st.markdown(f"""
+                    <div class="card-left">
+                        <img src="data:image/jpeg;base64,{img_b64}" class="card-img">
+                        <div>
+                            <div class="cpw-price">¥{avg_cost:.2f}/次</div>
+                            <div class="sub-info">¥{price:.0f} 已穿 {wear_count} 次</div>
                         </div>
-                        <div class="add-icon-circle">＋</div>
                     </div>
-                </div>
-                """, unsafe_allow_html=True)
+                    """, unsafe_allow_html=True)
 
-                # 隐形响应区 - 左侧点击进入详情
-                st.markdown('<div class="hide-btn overlay-left">', unsafe_allow_html=True)
-                if st.button("", key=f"det_{cid}"):
-                    st.session_state.selected_id = cid
-                    st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
+                with c2:
+                    # “详情”紧挨在绿加号左侧
+                    if st.button("详情", key=f"det_{cid}", type="tertiary"):
+                        st.session_state.selected_id = cid
+                        st.rerun()
 
-                # 隐形响应区 - 右侧绿色加号点击 +1
-                st.markdown('<div class="hide-btn overlay-right">', unsafe_allow_html=True)
-                if st.button("", key=f"add_{cid}"):
-                    update_wear_count(cid, 1)
-                    st.toast("已记录穿着！", icon="👕")
-                    st.rerun()
-                st.markdown('</div>', unsafe_allow_html=True)
+                with c3:
+                    # 绿色加号按钮，直接记数
+                    if st.button("＋", key=f"add_{cid}", type="primary"):
+                        update_wear_count(cid, 1)
+                        st.toast("已记录穿着！", icon="👕")
+                        st.rerun()
+                
+                st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
 
     elif nav_selected == "➕ 新增衣服":
         st.subheader("新增衣物")
