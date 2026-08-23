@@ -29,7 +29,7 @@ def get_image_base64(img_path):
             return base64.b64encode(img_file.read()).decode()
     return ""
 
-# ----------------- 1:1 还原目标 App CSS 样式 -----------------
+# ----------------- 1:1 还原图2 App CSS 样式与手机端卡片防错位 -----------------
 st.markdown("""
 <style>
     .stApp {
@@ -38,8 +38,8 @@ st.markdown("""
 
     /* 缩小页面边距，锁定手机屏幕宽度 */
     .main .block-container {
-        padding-left: 0.8rem !important;
-        padding-right: 0.8rem !important;
+        padding-left: 0.6rem !important;
+        padding-right: 0.6rem !important;
         padding-top: 0.5rem !important;
         max-width: 450px !important;
         margin: 0 auto !important;
@@ -63,39 +63,39 @@ st.markdown("""
         border: none !important;
         background-color: #f0f2f0 !important;
         color: #333333 !important;
-        font-size: 15px !important;
-        padding: 6px 16px !important;
+        font-size: 14px !important;
+        padding: 5px 14px !important;
     }
     div[data-testid="stPills"] button[aria-selected="true"] {
         background-color: #34c759 !important;
         color: white !important;
     }
 
-    /* 白色圆角卡片基础外框 */
-    .card-box {
+    /* 核心防错位：强制 Streamlit 列在手机端不换行 */
+    div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
         background-color: #ffffff;
-        border-radius: 20px;
-        padding: 12px 14px;
+        border-radius: 18px;
+        padding: 10px 12px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         border: 1px solid #f2f4f2;
+        margin-bottom: 12px;
+    }
+
+    /* 左侧卡片图片与文字容器 */
+    .card-left-box {
         display: flex;
         align-items: center;
+        gap: 12px;
         width: 100%;
-        box-sizing: border-box;
     }
 
-    .card-left {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        flex: 1;
-        min-width: 0;
-    }
-
-    /* 图片缩略图 */
     .card-img {
-        width: 64px;
-        height: 64px;
+        width: 62px;
+        height: 62px;
         border-radius: 12px;
         object-fit: cover;
         flex-shrink: 0;
@@ -103,7 +103,7 @@ st.markdown("""
     }
 
     .cpw-price {
-        font-size: 18px;
+        font-size: 17px;
         font-weight: 800;
         color: #1c1c1e;
         margin-bottom: 2px;
@@ -115,28 +115,47 @@ st.markdown("""
         color: #8e8e93;
     }
 
-    /* 详情文本按钮样式（绿加号左边） */
-    div[data-testid="column"]:nth-child(2) button[kind="tertiary"] {
-        color: #8e8e93 !important;
-        font-size: 14px !important;
-        font-weight: 500 !important;
-        padding: 0 4px !important;
-        background: transparent !important;
+    /* 右侧 3 个按钮样式控制 */
+    
+    /* 1. 黑色详情按钮 */
+    div[data-testid="column"]:nth-child(2) button {
+        background-color: #2c2c2e !important;
+        color: #ffffff !important;
+        border-radius: 8px !important;
         border: none !important;
-        min-height: 0 !important;
+        font-size: 12px !important;
+        padding: 4px 8px !important;
+        min-height: 32px !important;
+        height: 32px !important;
+        font-weight: 600 !important;
     }
 
-    /* 绿色加号按钮样式 */
-    div[data-testid="column"]:nth-child(3) button[kind="primary"] {
-        border-radius: 50% !important;
-        width: 38px !important;
-        height: 38px !important;
-        padding: 0 !important;
+    /* 2. 绿色 + 号按钮 */
+    div[data-testid="column"]:nth-child(3) button {
         background-color: #34c759 !important;
+        color: #ffffff !important;
+        border-radius: 50% !important;
         border: none !important;
-        box-shadow: 0 2px 6px rgba(52, 199, 89, 0.25) !important;
-        font-size: 22px !important;
-        line-height: 38px !important;
+        font-size: 18px !important;
+        width: 32px !important;
+        height: 32px !important;
+        padding: 0 !important;
+        font-weight: 700 !important;
+        box-shadow: 0 2px 5px rgba(52, 199, 89, 0.3) !important;
+    }
+
+    /* 3. 红色 - 号按钮 */
+    div[data-testid="column"]:nth-child(4) button {
+        background-color: #ff3b30 !important;
+        color: #ffffff !important;
+        border-radius: 50% !important;
+        border: none !important;
+        font-size: 18px !important;
+        width: 32px !important;
+        height: 32px !important;
+        padding: 0 !important;
+        font-weight: 700 !important;
+        box-shadow: 0 2px 5px rgba(255, 59, 48, 0.3) !important;
     }
 
     /* 详情页专属区块 */
@@ -336,7 +355,7 @@ if st.session_state.selected_id is not None:
                 st.rerun()
 
 # ==========================================
-# 2. 主界面 (1:1 还原 图2 APP)
+# 2. 主界面 (1:1 还原 图2 列表及右侧三个按钮)
 # ==========================================
 else:
     nav_selected = st.segmented_control(
@@ -375,12 +394,12 @@ else:
                 avg_cost = price / wear_count if wear_count > 0 else price
                 img_b64 = get_image_base64(img_path)
 
-                # 将整个卡片分为 3 列：[左侧信息, 中间“详情”, 右侧“＋加号”]
-                c1, c2, c3 = st.columns([0.65, 0.20, 0.15], vertical_alignment="center")
+                # 将每张卡片划分为：[卡片内容区, 黑色详情按钮, 绿色+号, 红色-号]
+                c1, c2, c3, c4 = st.columns([0.55, 0.17, 0.14, 0.14], vertical_alignment="center")
 
                 with c1:
                     st.markdown(f"""
-                    <div class="card-left">
+                    <div class="card-left-box">
                         <img src="data:image/jpeg;base64,{img_b64}" class="card-img">
                         <div>
                             <div class="cpw-price">¥{avg_cost:.2f}/次</div>
@@ -390,19 +409,24 @@ else:
                     """, unsafe_allow_html=True)
 
                 with c2:
-                    # “详情”紧挨在绿加号左侧
-                    if st.button("详情", key=f"det_{cid}", type="tertiary"):
+                    # 黑色“详情”按钮
+                    if st.button("详情", key=f"det_{cid}"):
                         st.session_state.selected_id = cid
                         st.rerun()
 
                 with c3:
-                    # 绿色加号按钮，直接记数
-                    if st.button("＋", key=f"add_{cid}", type="primary"):
+                    # 绿色“＋”按钮（加一次）
+                    if st.button("＋", key=f"add_{cid}"):
                         update_wear_count(cid, 1)
                         st.toast("已记录穿着！", icon="👕")
                         st.rerun()
-                
-                st.markdown("<div style='margin-bottom: 12px;'></div>", unsafe_allow_html=True)
+
+                with c4:
+                    # 红色“－”按钮（减一次）
+                    if st.button("－", key=f"sub_{cid}", disabled=(wear_count <= 0)):
+                        update_wear_count(cid, -1)
+                        st.toast("已撤回穿着！")
+                        st.rerun()
 
     elif nav_selected == "➕ 新增衣服":
         st.subheader("新增衣物")
