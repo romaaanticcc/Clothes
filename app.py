@@ -47,53 +47,67 @@ st.markdown("""
         overflow-x: hidden !important;
     }
 
-    /* 顶部统计 */
+    /* 顶部统计 - 仿图2样式 */
     .top-stats {
         display: flex;
         align-items: center;
-        gap: 16px;
-        font-size: 18px;
+        gap: 20px;
+        font-size: 20px;
         font-weight: 700;
         color: #1b381b;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
         margin-top: 4px;
+        padding: 0 4px;
+    }
+    .top-stats span {
+        background: #ffffff;
+        padding: 4px 14px;
+        border-radius: 20px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     }
 
-    /* 分类筛选按钮 */
+    /* 分类筛选按钮 - 仿图2胶囊样式 */
+    div[data-testid="stPills"] {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 12px;
+    }
     div[data-testid="stPills"] button {
         border-radius: 20px !important;
         border: none !important;
-        background-color: #e8eae8 !important;
-        color: #333333 !important;
+        background-color: #f0f2f0 !important;
+        color: #555555 !important;
         font-size: 13px !important;
-        padding: 4px 14px !important;
-        margin: 2px 3px !important;
+        padding: 5px 18px !important;
+        margin: 0 !important;
+        font-weight: 500 !important;
     }
     div[data-testid="stPills"] button[aria-selected="true"] {
-        background-color: #34c759 !important;
+        background-color: #2c6b2c !important;
         color: white !important;
     }
 
     /* ============================================================
-       核心：卡片 - 所有内容在一行，按钮紧贴右侧
+       卡片样式 - 仿图2：左侧图片+信息，右侧+按钮
        ============================================================ */
     .uniform-card {
         display: flex;
         align-items: center;
         justify-content: space-between;
         background-color: #ffffff;
-        border-radius: 18px;
+        border-radius: 14px;
         padding: 10px 14px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-        border: 1px solid #e8ede8;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+        border: 1px solid #eef1ee;
         margin-bottom: 10px;
         width: 100%;
         box-sizing: border-box;
-        min-height: 72px;
+        min-height: 68px;
         gap: 8px;
     }
 
-    /* 左侧：图片 + 文字 */
+    /* 左侧：图片 + 文字信息 */
     .card-left-group {
         display: flex;
         align-items: center;
@@ -103,9 +117,9 @@ st.markdown("""
     }
 
     .card-img {
-        width: 54px;
-        height: 54px;
-        border-radius: 12px;
+        width: 52px;
+        height: 52px;
+        border-radius: 10px;
         object-fit: cover;
         flex-shrink: 0;
         background-color: #f0f0f0;
@@ -116,135 +130,69 @@ st.markdown("""
         display: flex;
         flex-direction: column;
         min-width: 0;
+        flex: 1;
     }
 
+    /* 单次成本 - 大号加粗 */
     .cpw-price {
-        font-size: 15px;
+        font-size: 16px;
         font-weight: 800;
-        color: #1c1c1e;
-        margin-bottom: 1px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        color: #1a1a1a;
+        line-height: 1.3;
     }
 
+    /* 第二行：价格 + 穿着次数 */
     .sub-info {
-        font-size: 11px;
+        font-size: 12px;
         color: #8e8e93;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        line-height: 1.4;
     }
 
-    /* ============================================================
-       右侧按钮组：黑、绿、红 三色圆形按钮，紧贴无间隙
-       ============================================================ */
-    .card-right-buttons {
-        display: flex;
-        align-items: center;
-        gap: 5px;
+    /* 详情链接 - 仿图2的 "详情" 文字 */
+    .detail-link {
+        font-size: 12px;
+        color: #34c759;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        background: none;
+        border: none;
+        padding: 0;
+        margin-left: 4px;
+    }
+    .detail-link:hover {
+        color: #28a745;
+        text-decoration: underline;
+    }
+
+    /* 右侧：绿色 + 按钮 - 仿图2 */
+    .card-right-btn {
         flex-shrink: 0;
+        margin-left: 4px;
     }
-
-    /* 所有按钮统一样式：圆形、无边框、阴影 */
-    .card-right-buttons button {
+    .card-right-btn button {
         border-radius: 50% !important;
-        width: 34px !important;
-        height: 34px !important;
-        min-height: 34px !important;
+        width: 38px !important;
+        height: 38px !important;
+        min-height: 38px !important;
         padding: 0 !important;
         margin: 0 !important;
         border: none !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.18) !important;
-        font-weight: 800 !important;
+        background-color: #34c759 !important;
         color: #ffffff !important;
-        transition: all 0.1s ease !important;
+        font-size: 22px !important;
+        font-weight: 300 !important;
+        box-shadow: 0 2px 8px rgba(52, 199, 89, 0.35) !important;
+        transition: all 0.15s ease !important;
         cursor: pointer !important;
         line-height: 1 !important;
-        font-size: 18px !important;
     }
-
-    .card-right-buttons button:active {
-        transform: scale(0.88) !important;
+    .card-right-btn button:active {
+        transform: scale(0.85) !important;
         opacity: 0.8 !important;
-    }
-
-    /* 黑色详情按钮 (i) */
-    .btn-black button {
-        background-color: #2c2c2e !important;
-        font-size: 14px !important;
-        font-family: Georgia, serif !important;
-        font-style: italic !important;
-    }
-
-    /* 绿色加号按钮 (+1) */
-    .btn-green button {
-        background-color: #34c759 !important;
-        font-size: 20px !important;
-    }
-
-    /* 红色减号按钮 (-1) */
-    .btn-red button {
-        background-color: #ff3b30 !important;
-        font-size: 20px !important;
-    }
-
-    /* 禁用状态的红色按钮变灰 */
-    .btn-red button:disabled {
-        background-color: #c4c4c6 !important;
-        opacity: 0.5 !important;
-        transform: none !important;
-    }
-
-    /* 隐藏 Streamlit 默认的按钮多余样式 */
-    .stButton > button {
-        border-radius: 50% !important;
-    }
-
-    /* 确保列内没有额外间距 */
-    .row-widget.stColumns {
-        gap: 0 !important;
-    }
-    .row-widget.stColumns > div {
-        padding: 0 !important;
-        padding-left: 2px !important;
-        padding-right: 2px !important;
-    }
-
-    /* 确保卡片在手机上宽度拉满 */
-    @media (max-width: 640px) {
-        .uniform-card {
-            padding: 8px 10px;
-            min-height: 62px;
-        }
-        .card-img {
-            width: 46px;
-            height: 46px;
-        }
-        .cpw-price {
-            font-size: 13px;
-        }
-        .sub-info {
-            font-size: 10px;
-        }
-        .card-right-buttons button {
-            width: 28px !important;
-            height: 28px !important;
-            min-height: 28px !important;
-            font-size: 15px !important;
-        }
-        .btn-black button {
-            font-size: 12px !important;
-        }
-        .btn-green button, .btn-red button {
-            font-size: 17px !important;
-        }
-        .card-right-buttons {
-            gap: 3px;
-        }
     }
 
     /* 详情页样式 */
@@ -254,7 +202,7 @@ st.markdown("""
         padding: 16px 18px;
         margin: 12px 0;
         color: #1e3a1e;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        box-shadow: 0 1px 6px rgba(0,0,0,0.04);
         border: 1px solid #edf2ed;
     }
     .detail-row {
@@ -266,6 +214,73 @@ st.markdown("""
     }
     .detail-row:last-child {
         border-bottom: none;
+    }
+
+    /* 隐藏 Streamlit 默认按钮多余样式 */
+    .stButton > button {
+        border-radius: 50% !important;
+    }
+
+    /* 列间距归零 */
+    .row-widget.stColumns {
+        gap: 0 !important;
+    }
+    .row-widget.stColumns > div {
+        padding: 0 !important;
+    }
+
+    /* 手机适配 */
+    @media (max-width: 640px) {
+        .uniform-card {
+            padding: 8px 10px;
+            min-height: 60px;
+        }
+        .card-img {
+            width: 44px;
+            height: 44px;
+        }
+        .cpw-price {
+            font-size: 14px;
+        }
+        .sub-info {
+            font-size: 11px;
+        }
+        .card-right-btn button {
+            width: 34px !important;
+            height: 34px !important;
+            min-height: 34px !important;
+            font-size: 19px !important;
+        }
+        .top-stats {
+            font-size: 17px;
+            gap: 12px;
+        }
+        .top-stats span {
+            padding: 3px 12px;
+        }
+        div[data-testid="stPills"] button {
+            font-size: 12px !important;
+            padding: 4px 14px !important;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .card-img {
+            width: 38px;
+            height: 38px;
+        }
+        .cpw-price {
+            font-size: 12px;
+        }
+        .sub-info {
+            font-size: 10px;
+        }
+        .card-right-btn button {
+            width: 30px !important;
+            height: 30px !important;
+            min-height: 30px !important;
+            font-size: 16px !important;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -451,7 +466,7 @@ if st.session_state.selected_id is not None:
                 st.rerun()
 
 # ==========================================
-# 2. 主界面
+# 2. 主界面 - 仿图2样式
 # ==========================================
 else:
     nav_selected = st.segmented_control(
@@ -466,19 +481,22 @@ else:
         total_items = len(all_items)
         total_spent = sum(x[2] for x in all_items)
 
+        # 顶部统计 - 仿图2
         st.markdown(f"""
         <div class="top-stats">
             <span>👕 {total_items}</span>
-            <span>💰 ¥{total_spent:,.0f}</span>
+            <span>💰 {total_spent:,.0f}</span>
         </div>
         """, unsafe_allow_html=True)
 
+        # 分类筛选 - 仿图2胶囊
         categories = ["全部"] + get_categories()
         selected_cat = st.pills("分类筛选", categories, default="全部", label_visibility="collapsed")
 
         target_cat = selected_cat if selected_cat else "全部"
         displayed_items = get_clothes(target_cat)
 
+        # 分类标题 - 仿图2
         st.markdown(f"### {target_cat} ({len(displayed_items)})")
 
         if not displayed_items:
@@ -489,7 +507,7 @@ else:
                 avg_cost = price / wear_count if wear_count > 0 else price
                 img_b64 = get_image_base64(img_path)
 
-                # 🔥 关键：使用 HTML 卡片 + 内联按钮（通过 st.columns 精确放置）
+                # 卡片 HTML - 仿图2样式
                 st.markdown(f"""
                 <div class="uniform-card">
                     <div class="card-left-group">
@@ -499,39 +517,76 @@ else:
                             <div class="sub-info">¥{price:.0f} · 已穿 {wear_count} 次</div>
                         </div>
                     </div>
-                    <div class="card-right-buttons" id="btn-group-{cid}"></div>
+                    <div class="card-right-btn" id="add-btn-{cid}"></div>
                 </div>
                 """, unsafe_allow_html=True)
 
-                # 🔥 使用 4 列：1个占位列 + 3个按钮列，让按钮紧贴右侧
-                # 占位列比例 0.45，三个按钮各占 0.15，总和 0.9，留一点边距
-                col_spacer, col_det, col_add, col_sub = st.columns([0.45, 0.15, 0.15, 0.15])
+                # 使用两列：左侧放"详情"链接，右侧放"+"按钮
+                col_left, col_right = st.columns([0.7, 0.3])
 
-                # 黑色详情按钮 (i)
-                with col_det:
-                    st.markdown('<div class="btn-black">', unsafe_allow_html=True)
-                    if st.button("i", key=f"det_{cid}"):
+                with col_left:
+                    # "详情" 文字链接 - 仿图2
+                    if st.button(f"📄 详情", key=f"detail_{cid}", use_container_width=False):
                         st.session_state.selected_id = cid
                         st.rerun()
-                    st.markdown('</div>', unsafe_allow_html=True)
+                    # 为详情按钮添加样式：让它看起来像文字链接
+                    st.markdown("""
+                    <style>
+                        div[data-testid="column"]:first-child button {
+                            background: none !important;
+                            border: none !important;
+                            color: #34c759 !important;
+                            font-weight: 600 !important;
+                            font-size: 13px !important;
+                            padding: 2px 0 !important;
+                            box-shadow: none !important;
+                            text-decoration: none !important;
+                            border-radius: 0 !important;
+                            width: auto !important;
+                            min-height: auto !important;
+                        }
+                        div[data-testid="column"]:first-child button:hover {
+                            text-decoration: underline !important;
+                            color: #28a745 !important;
+                            background: none !important;
+                        }
+                        div[data-testid="column"]:first-child button:active {
+                            transform: none !important;
+                            opacity: 0.7 !important;
+                        }
+                    </style>
+                    """, unsafe_allow_html=True)
 
-                # 绿色 +1 按钮
-                with col_add:
-                    st.markdown('<div class="btn-green">', unsafe_allow_html=True)
+                with col_right:
+                    # 绿色 "+" 按钮 - 仿图2
                     if st.button("＋", key=f"add_{cid}"):
                         update_wear_count(cid, 1)
-                        st.toast("👕 已记录穿着！")
+                        st.toast("👕 +1 次穿着记录！")
                         st.rerun()
-                    st.markdown('</div>', unsafe_allow_html=True)
 
-                # 红色 -1 按钮（穿着次数为0时禁用）
-                with col_sub:
-                    st.markdown('<div class="btn-red">', unsafe_allow_html=True)
-                    if st.button("－", key=f"sub_{cid}", disabled=(wear_count <= 0)):
-                        update_wear_count(cid, -1)
-                        st.toast("↩️ 已撤回穿着！")
-                        st.rerun()
-                    st.markdown('</div>', unsafe_allow_html=True)
+        # 隐藏"详情"按钮的默认样式，让它看起来像文字链接
+        st.markdown("""
+        <style>
+            /* 让详情按钮看起来像文字链接 */
+            .stButton button[kind="secondary"] {
+                background: none !important;
+                border: none !important;
+                color: #34c759 !important;
+                font-weight: 600 !important;
+                font-size: 13px !important;
+                padding: 2px 0 !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                width: auto !important;
+                min-height: auto !important;
+            }
+            .stButton button[kind="secondary"]:hover {
+                text-decoration: underline !important;
+                background: none !important;
+                color: #28a745 !important;
+            }
+        </style>
+        """, unsafe_allow_html=True)
 
     elif nav_selected == "➕ 新增衣服":
         st.subheader("📸 新增衣物")
