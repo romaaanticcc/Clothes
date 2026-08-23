@@ -29,23 +29,22 @@ def get_image_base64(img_path):
             return base64.b64encode(img_file.read()).decode()
     return ""
 
-# ----------------- 终极适配：强制单行不换行 + 精准按钮上色 -----------------
+# ----------------- 终极 1:1 移动端防错位 CSS (彻底消灭滑动条) -----------------
 st.markdown("""
 <style>
     .stApp {
         background-color: #ffffff;
     }
 
-    /* 缩小页面边距，锁定手机屏幕最大宽度 */
+    /* 1. 严格锁定手机屏幕宽度 */
     .main .block-container {
         padding-left: 0.5rem !important;
         padding-right: 0.5rem !important;
         padding-top: 0.5rem !important;
-        max-width: 450px !important;
+        max-width: 420px !important;
         margin: 0 auto !important;
     }
 
-    /* 顶部看板样式 */
     .top-stats {
         display: flex;
         align-items: center;
@@ -53,11 +52,10 @@ st.markdown("""
         font-size: 20px;
         font-weight: 700;
         color: #1b381b;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
         margin-top: 4px;
     }
 
-    /* 分类胶囊样式 */
     div[data-testid="stPills"] button {
         border-radius: 20px !important;
         border: none !important;
@@ -71,93 +69,124 @@ st.markdown("""
         color: white !important;
     }
 
-    /* =======================================================
-       利用 CSS :has() 拦截卡片容器，强制手机端禁止换行！
-       ======================================================= */
-    
-    /* 目标：包含 .is-card 标识的 st.columns 容器 */
-    div[data-testid="stHorizontalBlock"]:has(.is-card) {
+    /* ========================================================= */
+    /* 核心破解：强制衣物列表在移动端保持单行，绝对不换行！ */
+    /* ========================================================= */
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) {
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: nowrap !important; /* 核心：绝对不换行 */
+        flex-wrap: nowrap !important;
         align-items: center !important;
-        gap: 6px !important; /* 压缩按钮间距 */
+        justify-content: space-between !important;
         background-color: #ffffff;
-        border-radius: 16px;
-        padding: 10px 8px !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        border: 1px solid #f0f4f0;
+        border-radius: 18px;
+        padding: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        border: 1px solid #f2f4f2;
         margin-bottom: 12px;
+        gap: 6px !important;
     }
 
-    /* 清除 Markdown 自带的段落空隙 */
-    div[data-testid="stHorizontalBlock"]:has(.is-card) p {
-        margin: 0 !important;
-    }
-
-    /* 第1列：图文区 (占据所有剩余空间) */
-    div[data-testid="stHorizontalBlock"]:has(.is-card) > div[data-testid="column"]:nth-child(1) {
-        flex: 1 1 auto !important;
+    /* 破解 Streamlit 强制的移动端 100% 宽度限制 */
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"] {
         width: auto !important;
-        min-width: 0 !important; 
-        padding: 0 !important;
+        min-width: 0 !important;
+        flex: none !important;
     }
 
-    /* 第2、3、4列：右侧的三个圆形按钮 (固定宽度) */
-    div[data-testid="stHorizontalBlock"]:has(.is-card) > div[data-testid="column"]:nth-child(n+2) {
-        flex: 0 0 auto !important;
+    /* 第 1 列：左侧图片+文字（占据剩余全部空间） */
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(1) {
+        flex: 1 1 auto !important;
+        width: 100% !important;
+        overflow: hidden;
+    }
+    
+    /* 第 2, 3, 4 列：右侧三个按钮（死死锁住 34px 固定宽度） */
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(2),
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(3),
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(4) {
+        flex: 0 0 34px !important;
         width: 34px !important;
-        padding: 0 !important;
     }
 
-    /* 统一重写三个按钮为全圆形 */
-    div[data-testid="stHorizontalBlock"]:has(.is-card) button {
+    /* ========================================================= */
+    /* 统一按钮样式：正圆形、无边框、覆盖 Streamlit 原生主题 */
+    /* ========================================================= */
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) button {
+        border-radius: 50% !important;
         width: 34px !important;
         height: 34px !important;
         min-height: 34px !important;
-        min-width: 34px !important;
-        border-radius: 50% !important;
         padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        border: none !important;
-        margin: 0 !important;
-        font-weight: 700 !important;
+        line-height: 1 !important;
     }
 
-    /* 🌈 颜色区分：第 2 列 (黑色详情按钮) */
-    div[data-testid="stHorizontalBlock"]:has(.is-card) > div[data-testid="column"]:nth-child(2) button {
+    /* 去除原生 hover 点击时的白色边框干扰 */
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) button:hover,
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) button:focus,
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) button:active {
+        opacity: 0.8 !important;
+        color: #ffffff !important;
+        border: none !important;
+        box-shadow: none !important;
+        outline: none !important;
+    }
+
+    /* 【黑色】详情按钮 (第 2 列) */
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(2) button {
         background-color: #2c2c2e !important;
         color: #ffffff !important;
-        font-size: 16px !important;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
     }
 
-    /* 🌈 颜色区分：第 3 列 (绿色 + 号按钮) */
-    div[data-testid="stHorizontalBlock"]:has(.is-card) > div[data-testid="column"]:nth-child(3) button {
+    /* 【绿色】＋号按钮 (第 3 列) */
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(3) button {
         background-color: #34c759 !important;
         color: #ffffff !important;
-        font-size: 18px !important;
-        box-shadow: 0 2px 5px rgba(52, 199, 89, 0.3) !important;
     }
 
-    /* 🌈 颜色区分：第 4 列 (红色 - 号按钮) */
-    div[data-testid="stHorizontalBlock"]:has(.is-card) > div[data-testid="column"]:nth-child(4) button {
+    /* 【红色】－号按钮 (第 4 列) */
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(4) button {
         background-color: #ff3b30 !important;
         color: #ffffff !important;
-        font-size: 18px !important;
-        box-shadow: 0 2px 5px rgba(255, 59, 48, 0.3) !important;
-    }
-    
-    /* 红色减号按钮禁用时的颜色变浅 */
-    div[data-testid="stHorizontalBlock"]:has(.is-card) > div[data-testid="column"]:nth-child(4) button:disabled {
-        background-color: #ffb3b0 !important; 
-        color: #ffffff90 !important;
-        box-shadow: none !important;
     }
 
-    /* ======================================================= */
+    /* ========================================================= */
+    /* 卡片左侧内容排版 */
+    /* ========================================================= */
+    .card-left-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        overflow: hidden;
+    }
+    .card-img {
+        width: 54px;
+        height: 54px;
+        border-radius: 12px;
+        object-fit: cover;
+        flex-shrink: 0;
+        background-color: #f8f8f8;
+    }
+    .cpw-price {
+        font-size: 16px;
+        font-weight: 800;
+        color: #1c1c1e;
+        margin-bottom: 2px;
+        white-space: nowrap;
+    }
+    .sub-info {
+        font-size: 12px;
+        color: #8e8e93;
+        white-space: nowrap;
+    }
 
     /* 详情页专属区块 */
     .detail-box {
@@ -356,7 +385,7 @@ if st.session_state.selected_id is not None:
                 st.rerun()
 
 # ==========================================
-# 2. 主界面 (不换行列表、三色圆形按钮)
+# 2. 主界面 (全卡片与三圆形按钮严格防溢出布局)
 # ==========================================
 else:
     nav_selected = st.segmented_control(
@@ -371,7 +400,6 @@ else:
         total_items = len(all_items)
         total_spent = sum(x[2] for x in all_items)
 
-        # 顶部看板：👕 3   💰 145
         st.markdown(f"""
         <div class="top-stats">
             <span>👕 {total_items}</span>
@@ -395,17 +423,16 @@ else:
                 avg_cost = price / wear_count if wear_count > 0 else price
                 img_b64 = get_image_base64(img_path)
 
-                # 将整行拆分为 4 列，依靠 CSS 进行强制横排与样式接管
-                c1, c2, c3, c4 = st.columns([0.55, 0.15, 0.15, 0.15])
+                # 将每张卡片划分为：[内容区, 详情ⓘ, 绿＋, 红－] (尺寸靠 CSS 强制锁定，这里的 0.55 只是占位)
+                c1, c2, c3, c4 = st.columns([0.55, 0.15, 0.15, 0.15], vertical_alignment="center")
 
                 with c1:
-                    # 关键标识 `<div class="is-card">`：CSS 会根据此标识接管整个 stHorizontalBlock
                     st.markdown(f"""
-                    <div class="is-card" style="display: flex; align-items: center; gap: 8px;">
-                        <img src="data:image/jpeg;base64,{img_b64}" style="width: 52px; height: 52px; border-radius: 10px; object-fit: cover; flex-shrink: 0;" />
-                        <div style="overflow: hidden; white-space: nowrap;">
-                            <div style="font-size: 16px; font-weight: 800; color: #1c1c1e;">¥{avg_cost:.2f}/次</div>
-                            <div style="font-size: 12px; color: #8e8e93;">¥{price:.0f} 已穿 {wear_count} 次</div>
+                    <div class="card-left-box">
+                        <img src="data:image/jpeg;base64,{img_b64}" class="card-img">
+                        <div>
+                            <div class="cpw-price">¥{avg_cost:.2f}/次</div>
+                            <div class="sub-info">¥{price:.0f} 已穿 {wear_count} 次</div>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
