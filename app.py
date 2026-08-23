@@ -16,6 +16,63 @@ except ImportError:
 
 st.set_page_config(page_title="我的衣橱", page_icon="👗", layout="centered")
 
+import streamlit.components.v1 as components
+
+# ==========================================
+# 开启 PWA 沉浸式全屏模式 (隐藏手机浏览器地址栏)
+# ==========================================
+def make_pwa():
+    components.html("""
+    <script>
+        // 获取父页面的 document
+        const parentDoc = window.parent.document;
+        
+        // 检查是否已经注入过配置，避免重复注入
+        if (!parentDoc.querySelector("link[rel='manifest']")) {
+            // 核心配置：告诉手机这是一个独立的 App
+            const manifest = {
+                "name": "我的衣橱",
+                "short_name": "衣橱",
+                "display": "standalone",  // 【关键】standalone 表示隐藏地址栏的全屏沉浸模式
+                "background_color": "#f7f9f7",
+                "theme_color": "#34c759",
+                "start_url": ".",
+                "icons": [{
+                    "src": "https://img.icons8.com/emoji/512/dress.png", // 桌面显示的图标
+                    "sizes": "512x512",
+                    "type": "image/png"
+                }]
+            };
+            const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+            const manifestURL = URL.createObjectURL(blob);
+            
+            const link = parentDoc.createElement('link');
+            link.rel = 'manifest';
+            link.href = manifestURL;
+            parentDoc.head.appendChild(link);
+            
+            // 强制安卓系统隐藏地址栏
+            const meta1 = parentDoc.createElement('meta');
+            meta1.name = 'mobile-web-app-capable';
+            meta1.content = 'yes';
+            parentDoc.head.appendChild(meta1);
+            
+            // 强制苹果 iOS 系统隐藏地址栏和底部工具栏
+            const meta2 = parentDoc.createElement('meta');
+            meta2.name = 'apple-mobile-web-app-capable';
+            meta2.content = 'yes';
+            parentDoc.head.appendChild(meta2);
+            
+            const meta3 = parentDoc.createElement('meta');
+            meta3.name = 'apple-mobile-web-app-status-bar-style';
+            meta3.content = 'default';
+            parentDoc.head.appendChild(meta3);
+        }
+    </script>
+    """, height=0, width=0)
+
+make_pwa() # 调用函数
+
 DB_FILE = "wardrobe.db"
 UPLOAD_DIR = "uploaded_clothes"
 
