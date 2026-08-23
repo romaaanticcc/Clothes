@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 import os
 import uuid
+import base64
 from datetime import datetime
 from PIL import Image, ImageOps
 import io
