@@ -29,14 +29,14 @@ def get_image_base64(img_path):
             return base64.b64encode(img_file.read()).decode()
     return ""
 
-# ----------------- 1:1 还原目标 App CSS 样式 -----------------
+# ----------------- 1:1 还原目标 App (图2) CSS 样式 -----------------
 st.markdown("""
 <style>
     .stApp {
         background-color: #f7f9f7;
     }
 
-    /* 缩小页面边距，锁定手机屏幕宽度 */
+    /* 锁定手机屏幕宽度及边距 */
     .main .block-container {
         padding-left: 0.8rem !important;
         padding-right: 0.8rem !important;
@@ -45,31 +45,38 @@ st.markdown("""
         margin: 0 auto !important;
     }
 
-    /* 顶部看板样式 */
+    /* 顶部看板样式 (图2) */
     .top-stats {
         display: flex;
         align-items: center;
         gap: 16px;
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 700;
         color: #1b381b;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
+        margin-top: 4px;
     }
 
-    /* 把选择分类胶囊（Pills）高亮颜色改为绿字白底 / 绿色高亮 */
+    /* Pills 选中的绿色高亮胶囊 */
     div[data-testid="stPills"] button[aria-selected="true"] {
         background-color: #34c759 !important;
         color: white !important;
     }
 
-    /* 独立白色圆角卡片 */
+    /* 卡片包围容器：将原生按钮覆盖于 HTML 卡片右侧加号上 */
+    .item-wrapper {
+        position: relative;
+        margin-bottom: 12px;
+        width: 100%;
+    }
+
+    /* 独立白色大圆角卡片 */
     .app-card {
         background-color: #ffffff;
-        border-radius: 18px;
-        padding: 12px 16px;
-        margin-bottom: 12px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-        border: 1px solid #f0f4f0;
+        border-radius: 20px;
+        padding: 14px 16px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        border: 1px solid #f2f5f2;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -80,17 +87,16 @@ st.markdown("""
     .app-card-left {
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 16px;
         flex: 1;
         min-width: 0;
-        cursor: pointer;
     }
 
     /* 图片缩略图 */
     .app-card-img {
-        width: 62px;
-        height: 62px;
-        border-radius: 10px;
+        width: 68px;
+        height: 68px;
+        border-radius: 12px;
         object-fit: cover;
         flex-shrink: 0;
         background-color: #f9f9f9;
@@ -104,38 +110,55 @@ st.markdown("""
     }
 
     .cpw-price {
-        font-size: 17px;
+        font-size: 18px;
         font-weight: 800;
         color: #1b2e1b;
-        margin-bottom: 2px;
+        margin-bottom: 4px;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     .sub-info {
-        font-size: 13px;
+        font-size: 14px;
         color: #a0b2a0;
     }
 
-    /* 调整原生加号按钮形状，保持圆形绿底高亮 */
-    div[data-testid="column"] button[kind="primary"] {
+    /* 全覆盖无痕点击卡片进入详情 */
+    div[data-testid="stButton"] > button[kind="tertiary"] {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 80% !important;
+        height: 100% !important;
+        z-index: 1;
+        background: transparent !important;
+        border: none !important;
+        color: transparent !important;
+    }
+
+    /* 图2 右侧绿色圆形 + 按钮 */
+    .add-btn-container {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+    }
+
+    .add-btn-container button[kind="primary"] {
         border-radius: 50% !important;
-        width: 36px !important;
-        height: 36px !important;
+        width: 34px !important;
+        height: 34px !important;
+        min-height: 34px !important;
         padding: 0 !important;
         background-color: #34c759 !important;
         border: none !important;
         box-shadow: 0 2px 6px rgba(52, 199, 89, 0.3) !important;
         font-size: 18px !important;
-    }
-
-    /* 隐藏原生透明按钮边框（实现点击卡片进入详情） */
-    div[data-testid="stButton"] > button[kind="tertiary"] {
-        padding: 0 !important;
-        min-height: 0 !important;
-        font-size: 12px !important;
-        color: #9cb09c !important;
-        background: transparent !important;
-        border: none !important;
+        font-weight: bold !important;
+        color: white !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
     /* 详情页专属区块 */
@@ -335,7 +358,7 @@ if st.session_state.selected_id is not None:
                 st.rerun()
 
 # ==========================================
-# 2. 主界面 (1:1 还原 APP)
+# 2. 主界面 (1:1 还原 图2 APP)
 # ==========================================
 else:
     nav_selected = st.segmented_control(
@@ -350,11 +373,11 @@ else:
         total_items = len(all_items)
         total_spent = sum(x[2] for x in all_items)
 
-        # 顶部指标 (👕 3  💰 ¥145)
+        # 1:1 对应图2顶部指标 (🎽 3  💰 145)
         st.markdown(f"""
         <div class="top-stats">
-            <span>👕 {total_items}</span>
-            <span>💰 ¥{total_spent:,.0f}</span>
+            <span>🎽 {total_items}</span>
+            <span>💰 {total_spent:,.0f}</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -364,7 +387,7 @@ else:
         target_cat = selected_cat if selected_cat else "全部"
         displayed_items = get_clothes(target_cat)
 
-        st.markdown(f"#### {target_cat} ({len(displayed_items)})")
+        st.markdown(f"### **{target_cat} ({len(displayed_items)})**")
 
         if not displayed_items:
             st.info("该分类下暂无衣物，请选择「➕ 新增衣服」上传！")
@@ -374,11 +397,10 @@ else:
                 avg_cost = price / wear_count if wear_count > 0 else price
                 img_b64 = get_image_base64(img_path)
 
-                col_card, col_add = st.columns([0.82, 0.18], vertical_alignment="center")
-
-                with col_card:
-                    st.markdown(f"""
-                    <div class="app-card" style="margin-bottom:0px;">
+                # 完美还原图2：绿色➕号置于卡片右侧内嵌，整张卡片纯净无杂乱按钮
+                st.markdown(f"""
+                <div class="item-wrapper">
+                    <div class="app-card">
                         <div class="app-card-left">
                             <img src="data:image/jpeg;base64,{img_b64}" class="app-card-img">
                             <div class="app-card-info">
@@ -387,18 +409,21 @@ else:
                             </div>
                         </div>
                     </div>
-                    """, unsafe_allow_html=True)
-                    
-                    if st.button("查看详情", key=f"det_{cid}", type="tertiary", use_container_width=True):
-                        st.session_state.selected_id = cid
-                        st.rerun()
+                </div>
+                """, unsafe_allow_html=True)
 
-                with col_add:
-                    # 使用原生按钮消除 URL 重定向造成的白屏问题
-                    if st.button("＋", key=f"add_{cid}", type="primary"):
-                        update_wear_count(cid, 1)
-                        st.toast("已记录穿着！", icon="👕")
-                        st.rerun()
+                # 覆盖全卡片透明按钮（点击查看详情）
+                if st.button("", key=f"det_{cid}", type="tertiary"):
+                    st.session_state.selected_id = cid
+                    st.rerun()
+
+                # 右侧原生绿色圆圈 ＋ 按钮（内嵌卡片右侧，点击无白屏记录穿着）
+                st.markdown('<div class="add-btn-container">', unsafe_allow_html=True)
+                if st.button("＋", key=f"add_{cid}", type="primary"):
+                    update_wear_count(cid, 1)
+                    st.toast("已记录穿着！", icon="👕")
+                    st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
 
     elif nav_selected == "➕ 新增衣服":
         st.subheader("新增衣物")
