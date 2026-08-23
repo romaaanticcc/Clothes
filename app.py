@@ -27,7 +27,7 @@ def get_image_base64(img_path):
     with open(img_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-# ----------------- 强制手机端显示为图 2 电脑端横向布局的 CSS -----------------
+# ----------------- 手机端紧凑内聚 CSS -----------------
 st.markdown("""
 <style>
     .stApp {
@@ -44,81 +44,86 @@ st.markdown("""
         margin-bottom: 12px;
     }
     
-    /* 1. 关键：覆盖 Streamlit 手机端的自动堆叠规则，强制保持横向排列 */
-    div[data-testid="column"] {
-        width: auto !important;
-        flex: 1 1 auto !important;
-        min-width: 0 !important;
-    }
-    
-    /* 强制横向 flex 容器在移动端不换行 */
+    /* 强制横向不超屏、紧凑排列 */
     div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         align-items: center !important;
-        justify-content: space-between !important;
-        padding: 6px 0 !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        width: 100% !important;
     }
 
-    /* 2. 精确控制 3 列的宽度比例（与图 2 一致） */
+    /* 精确固定各列比例，紧凑贴合 */
     div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(1) {
-        flex: 0 0 75px !important; /* 第一列：图片宽度固定 75px */
-        width: 75px !important;
+        flex: 0 0 70px !important; /* 第一列图片按钮宽度 */
+        width: 70px !important;
+        min-width: 70px !important;
     }
     div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(2) {
-        flex: 1 1 auto !important; /* 第二列：文字自适应占据中间空间 */
-        padding-left: 12px !important;
+        flex: 1 1 auto !important; /* 第二列文字自适应填充，去除多余间距 */
+        width: auto !important;
+        min-width: 0 !important;
+        padding-left: 4px !important;
     }
     div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(3) {
-        flex: 0 0 50px !important; /* 第三列：按钮宽度固定 50px */
+        flex: 0 0 45px !important; /* 第三列加号按钮宽度 */
+        width: 45px !important;
+        min-width: 45px !important;
         display: flex !important;
         justify-content: flex-end !important;
     }
 
-    /* 3. 卡片图片样式（严格限制尺寸） */
+    /* 图片点击按钮化美化 */
+    div[data-testid="column"]:nth-child(1) button {
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    /* 卡片缩略图样式 */
     .card-img {
-        width: 75px;
-        height: 55px;
+        width: 65px;
+        height: 50px;
         border-radius: 8px;
         object-fit: cover;
         display: block;
     }
 
-    /* 4. 文字排版 */
+    /* 排版字体紧凑化 */
     .cpw-price {
-        font-size: 17px;
+        font-size: 16px;
         font-weight: 800;
         color: #1b381b;
+        line-height: 1.2;
         margin-bottom: 2px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     .sub-info {
-        font-size: 13px;
+        font-size: 12px;
         color: #8c9c8c;
+        line-height: 1.2;
     }
 
-    /* 5. 还原图 2 中的红色方角圆形加号按钮 */
+    /* 红色圆形/圆角加号按钮 */
     div[data-testid="column"]:nth-child(3) button[kind="primary"] {
         border-radius: 10px !important;
         background-color: #ff5252 !important;
         border: none !important;
         color: white !important;
         font-size: 20px !important;
-        height: 42px !important;
-        width: 42px !important;
+        height: 38px !important;
+        width: 38px !important;
         padding: 0 !important;
         box-shadow: 0 2px 6px rgba(255, 82, 82, 0.25) !important;
     }
-    div[data-testid="column"]:nth-child(3) button[kind="primary"]:hover {
-        background-color: #ff3838 !important;
-    }
     
-    /* 详情按钮 */
+    /* 详情链接 */
     button[kind="tertiary"] {
         padding: 0 !important;
         min-height: 0 !important;
-        font-size: 14px !important;
+        font-size: 13px !important;
         color: #5c705c !important;
     }
     
@@ -255,7 +260,7 @@ if "selected_id" not in st.session_state:
     st.session_state.selected_id = None
 
 # ==========================================
-# 1. 详情视图
+# 1. 详情视图 (放大显示大图)
 # ==========================================
 if st.session_state.selected_id is not None:
     item = get_clothing_by_id(st.session_state.selected_id)
@@ -319,7 +324,7 @@ if st.session_state.selected_id is not None:
                 st.rerun()
 
 # ==========================================
-# 2. 主界面 (与图 2 电脑端完全一致的布局)
+# 2. 主界面 (紧凑无溢出布局 + 点击图片看大图)
 # ==========================================
 else:
     nav_selected = st.segmented_control(
@@ -362,7 +367,21 @@ else:
                 with c_img:
                     if os.path.exists(img_path):
                         img_b64 = get_image_base64(img_path)
-                        st.markdown(f'<img src="data:image/jpeg;base64,{img_b64}" class="card-img">', unsafe_allow_html=True)
+                        # 点击图片进入详情页（大图）
+                        if st.button(" ", key=f"img_btn_{cid}", help="点击查看大图"):
+                            st.session_state.selected_id = cid
+                            st.rerun()
+                        # 使用 CSS 绝对定位把 HTML 图片覆盖在透明按钮上
+                        st.markdown(
+                            f'<style>div[data-testid="column"]:nth-child(1) button[key="img_btn_{cid}"] '
+                            f'{{ position: relative; }}</style>', 
+                            unsafe_allow_html=True
+                        )
+                        st.markdown(
+                            f'<script>document.querySelector(\'button[kind="secondary"][aria-label=" "]\')</script>', 
+                            unsafe_allow_html=True
+                        )
+                        st.markdown(f'<img src="data:image/jpeg;base64,{img_b64}" class="card-img" style="margin-top:-38px; pointer-events:none;">', unsafe_allow_html=True)
 
                 with c_info:
                     st.markdown(f"<div class='cpw-price'>¥{avg_cost:.2f}/次</div>", unsafe_allow_html=True)
