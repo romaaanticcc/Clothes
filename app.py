@@ -29,19 +29,19 @@ def get_image_base64(img_path):
             return base64.b64encode(img_file.read()).decode()
     return ""
 
-# ----------------- 1:1 还原图2 App CSS 样式与手机端卡片防错位 -----------------
+# ----------------- 适配手机宽度 + 圆形/圆角按钮 CSS -----------------
 st.markdown("""
 <style>
     .stApp {
         background-color: #ffffff;
     }
 
-    /* 缩小页面边距，锁定手机屏幕宽度 */
+    /* 1. 严格锁定手机屏幕宽度，禁止页面加宽与横向滑动 */
     .main .block-container {
-        padding-left: 0.6rem !important;
-        padding-right: 0.6rem !important;
-        padding-top: 0.5rem !important;
-        max-width: 450px !important;
+        padding-left: 0.4rem !important;
+        padding-right: 0.4rem !important;
+        padding-top: 0.4rem !important;
+        max-width: 400px !important;
         margin: 0 auto !important;
     }
 
@@ -49,113 +49,130 @@ st.markdown("""
     .top-stats {
         display: flex;
         align-items: center;
-        gap: 16px;
-        font-size: 20px;
+        gap: 14px;
+        font-size: 19px;
         font-weight: 700;
         color: #1b381b;
-        margin-bottom: 12px;
-        margin-top: 8px;
+        margin-bottom: 10px;
+        margin-top: 4px;
     }
 
-    /* 分类胶囊按钮高亮样式 */
+    /* 分类胶囊按钮圆角样式 */
     div[data-testid="stPills"] button {
-        border-radius: 20px !important;
+        border-radius: 18px !important;
         border: none !important;
         background-color: #f0f2f0 !important;
         color: #333333 !important;
-        font-size: 14px !important;
-        padding: 5px 14px !important;
+        font-size: 13px !important;
+        padding: 4px 12px !important;
     }
     div[data-testid="stPills"] button[aria-selected="true"] {
         background-color: #34c759 !important;
         color: white !important;
     }
 
-    /* 核心防错位：强制 Streamlit 列在手机端不换行 */
+    /* 强制列在一行摆放，不折行、不上宽 */
     div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
         align-items: center !important;
+        justify-content: space-between !important;
         flex-wrap: nowrap !important;
         background-color: #ffffff;
         border-radius: 18px;
-        padding: 10px 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        padding: 8px 10px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
         border: 1px solid #f2f4f2;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
+        gap: 4px !important;
     }
 
-    /* 左侧卡片图片与文字容器 */
+    /* 左侧卡片图片与文字 */
     .card-left-box {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
         width: 100%;
+        min-width: 0;
     }
 
     .card-img {
-        width: 62px;
-        height: 62px;
-        border-radius: 12px;
+        width: 52px;
+        height: 52px;
+        border-radius: 10px;
         object-fit: cover;
         flex-shrink: 0;
         background-color: #f8f8f8;
     }
 
     .cpw-price {
-        font-size: 17px;
+        font-size: 15px;
         font-weight: 800;
         color: #1c1c1e;
         margin-bottom: 2px;
+        white-space: nowrap;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     .sub-info {
-        font-size: 13px;
+        font-size: 11px;
         color: #8e8e93;
+        white-space: nowrap;
     }
 
-    /* 右侧 3 个按钮样式控制 */
+    /* 2 & 3. 右侧按钮圆角/圆形样式 */
     
-    /* 1. 黑色详情按钮 */
+    /* 黑色圆角详情按钮 */
     div[data-testid="column"]:nth-child(2) button {
         background-color: #2c2c2e !important;
         color: #ffffff !important;
-        border-radius: 8px !important;
+        border-radius: 12px !important;
         border: none !important;
-        font-size: 12px !important;
-        padding: 4px 8px !important;
-        min-height: 32px !important;
-        height: 32px !important;
+        font-size: 11px !important;
+        padding: 0 !important;
+        width: 34px !important;
+        height: 30px !important;
+        min-height: 30px !important;
         font-weight: 600 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
-    /* 2. 绿色 + 号按钮 */
+    /* 绿色圆形 + 号按钮 */
     div[data-testid="column"]:nth-child(3) button {
         background-color: #34c759 !important;
         color: #ffffff !important;
         border-radius: 50% !important;
         border: none !important;
-        font-size: 18px !important;
-        width: 32px !important;
-        height: 32px !important;
+        font-size: 16px !important;
+        width: 30px !important;
+        height: 30px !important;
+        min-height: 30px !important;
         padding: 0 !important;
         font-weight: 700 !important;
-        box-shadow: 0 2px 5px rgba(52, 199, 89, 0.3) !important;
+        box-shadow: 0 2px 5px rgba(52, 199, 89, 0.25) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
-    /* 3. 红色 - 号按钮 */
+    /* 红色圆形 - 号按钮 */
     div[data-testid="column"]:nth-child(4) button {
         background-color: #ff3b30 !important;
         color: #ffffff !important;
         border-radius: 50% !important;
         border: none !important;
-        font-size: 18px !important;
-        width: 32px !important;
-        height: 32px !important;
+        font-size: 16px !important;
+        width: 30px !important;
+        height: 30px !important;
+        min-height: 30px !important;
         padding: 0 !important;
         font-weight: 700 !important;
-        box-shadow: 0 2px 5px rgba(255, 59, 48, 0.3) !important;
+        box-shadow: 0 2px 5px rgba(255, 59, 48, 0.25) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
     /* 详情页专属区块 */
@@ -355,7 +372,7 @@ if st.session_state.selected_id is not None:
                 st.rerun()
 
 # ==========================================
-# 2. 主界面 (1:1 还原 图2 列表及右侧三个按钮)
+# 2. 主界面 (1:1 紧凑手机卡片列表)
 # ==========================================
 else:
     nav_selected = st.segmented_control(
@@ -394,8 +411,8 @@ else:
                 avg_cost = price / wear_count if wear_count > 0 else price
                 img_b64 = get_image_base64(img_path)
 
-                # 将每张卡片划分为：[卡片内容区, 黑色详情按钮, 绿色+号, 红色-号]
-                c1, c2, c3, c4 = st.columns([0.55, 0.17, 0.14, 0.14], vertical_alignment="center")
+                # 4列紧凑排布：[图片+文字 (48%), 黑色详情 (17%), 绿色+ (17%), 红色- (17%)]
+                c1, c2, c3, c4 = st.columns([0.48, 0.17, 0.17, 0.17], vertical_alignment="center")
 
                 with c1:
                     st.markdown(f"""
@@ -403,26 +420,26 @@ else:
                         <img src="data:image/jpeg;base64,{img_b64}" class="card-img">
                         <div>
                             <div class="cpw-price">¥{avg_cost:.2f}/次</div>
-                            <div class="sub-info">¥{price:.0f} 已穿 {wear_count} 次</div>
+                            <div class="sub-info">¥{price:.0f} 已穿{wear_count}次</div>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
 
                 with c2:
-                    # 黑色“详情”按钮
+                    # 黑色圆角“详情”按钮
                     if st.button("详情", key=f"det_{cid}"):
                         st.session_state.selected_id = cid
                         st.rerun()
 
                 with c3:
-                    # 绿色“＋”按钮（加一次）
+                    # 绿色圆形“＋”按钮
                     if st.button("＋", key=f"add_{cid}"):
                         update_wear_count(cid, 1)
                         st.toast("已记录穿着！", icon="👕")
                         st.rerun()
 
                 with c4:
-                    # 红色“－”按钮（减一次）
+                    # 红色圆形“－”按钮
                     if st.button("－", key=f"sub_{cid}", disabled=(wear_count <= 0)):
                         update_wear_count(cid, -1)
                         st.toast("已撤回穿着！")
