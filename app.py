@@ -29,19 +29,19 @@ def get_image_base64(img_path):
             return base64.b64encode(img_file.read()).decode()
     return ""
 
-# ----------------- 精准适配手机端 CSS (三色圆形按钮，不越界) -----------------
+# ----------------- 终极适配：强制单行不换行 + 精准按钮上色 -----------------
 st.markdown("""
 <style>
     .stApp {
         background-color: #ffffff;
     }
 
-    /* 1. 严格锁定手机屏宽 375px，防止横向滑动 */
+    /* 缩小页面边距，锁定手机屏幕最大宽度 */
     .main .block-container {
-        padding-left: 0.3rem !important;
-        padding-right: 0.3rem !important;
-        padding-top: 0.4rem !important;
-        max-width: 375px !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+        padding-top: 0.5rem !important;
+        max-width: 450px !important;
         margin: 0 auto !important;
     }
 
@@ -64,99 +64,100 @@ st.markdown("""
         background-color: #f0f2f0 !important;
         color: #333333 !important;
         font-size: 13px !important;
-        padding: 4px 10px !important;
+        padding: 4px 12px !important;
     }
     div[data-testid="stPills"] button[aria-selected="true"] {
         background-color: #34c759 !important;
         color: white !important;
     }
 
-    /* 单卡片横向紧凑布局 */
-    div[data-testid="stHorizontalBlock"] {
+    /* =======================================================
+       利用 CSS :has() 拦截卡片容器，强制手机端禁止换行！
+       ======================================================= */
+    
+    /* 目标：包含 .is-card 标识的 st.columns 容器 */
+    div[data-testid="stHorizontalBlock"]:has(.is-card) {
         display: flex !important;
         flex-direction: row !important;
+        flex-wrap: nowrap !important; /* 核心：绝对不换行 */
         align-items: center !important;
-        flex-wrap: nowrap !important;
+        gap: 6px !important; /* 压缩按钮间距 */
         background-color: #ffffff;
         border-radius: 16px;
-        padding: 6px 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        padding: 10px 8px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         border: 1px solid #f0f4f0;
-        margin-bottom: 8px;
-        gap: 2px !important;
+        margin-bottom: 12px;
     }
 
-    /* 左侧图文区 */
-    .card-left-box {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        width: 100%;
-        overflow: hidden;
+    /* 清除 Markdown 自带的段落空隙 */
+    div[data-testid="stHorizontalBlock"]:has(.is-card) p {
+        margin: 0 !important;
     }
 
-    .card-img {
-        width: 48px;
-        height: 48px;
-        border-radius: 8px;
-        object-fit: cover;
-        flex-shrink: 0;
-        background-color: #f8f8f8;
-    }
-
-    .cpw-price {
-        font-size: 14px;
-        font-weight: 800;
-        color: #1c1c1e;
-        margin-bottom: 1px;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        white-space: nowrap;
-    }
-
-    .sub-info {
-        font-size: 11px;
-        color: #8e8e93;
-        white-space: nowrap;
-    }
-
-    /* 通用圆形按钮基础结构 */
-    div[data-testid="column"] button {
-        border-radius: 50% !important;
-        width: 30px !important;
-        height: 30px !important;
-        min-height: 30px !important;
+    /* 第1列：图文区 (占据所有剩余空间) */
+    div[data-testid="stHorizontalBlock"]:has(.is-card) > div[data-testid="column"]:nth-child(1) {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        min-width: 0 !important; 
         padding: 0 !important;
-        border: none !important;
-        font-weight: bold !important;
+    }
+
+    /* 第2、3、4列：右侧的三个圆形按钮 (固定宽度) */
+    div[data-testid="stHorizontalBlock"]:has(.is-card) > div[data-testid="column"]:nth-child(n+2) {
+        flex: 0 0 auto !important;
+        width: 34px !important;
+        padding: 0 !important;
+    }
+
+    /* 统一重写三个按钮为全圆形 */
+    div[data-testid="stHorizontalBlock"]:has(.is-card) button {
+        width: 34px !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        min-width: 34px !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        margin: 0 auto !important;
+        border: none !important;
+        margin: 0 !important;
+        font-weight: 700 !important;
     }
 
-    /* 2. 精准颜色区分：黑色详情按钮 */
-    div[data-testid="column"] button[key*="det_"] {
-        background-color: #1c1c1e !important;
+    /* 🌈 颜色区分：第 2 列 (黑色详情按钮) */
+    div[data-testid="stHorizontalBlock"]:has(.is-card) > div[data-testid="column"]:nth-child(2) button {
+        background-color: #2c2c2e !important;
         color: #ffffff !important;
-        font-size: 13px !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
+        font-size: 16px !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
     }
 
-    /* 绿色＋号按钮 */
-    div[data-testid="column"] button[key*="add_"] {
+    /* 🌈 颜色区分：第 3 列 (绿色 + 号按钮) */
+    div[data-testid="stHorizontalBlock"]:has(.is-card) > div[data-testid="column"]:nth-child(3) button {
         background-color: #34c759 !important;
         color: #ffffff !important;
-        font-size: 16px !important;
-        box-shadow: 0 2px 4px rgba(52, 199, 89, 0.3) !important;
+        font-size: 18px !important;
+        box-shadow: 0 2px 5px rgba(52, 199, 89, 0.3) !important;
     }
 
-    /* 红色－号按钮 */
-    div[data-testid="column"] button[key*="sub_"] {
+    /* 🌈 颜色区分：第 4 列 (红色 - 号按钮) */
+    div[data-testid="stHorizontalBlock"]:has(.is-card) > div[data-testid="column"]:nth-child(4) button {
         background-color: #ff3b30 !important;
         color: #ffffff !important;
-        font-size: 16px !important;
-        box-shadow: 0 2px 4px rgba(255, 59, 48, 0.3) !important;
+        font-size: 18px !important;
+        box-shadow: 0 2px 5px rgba(255, 59, 48, 0.3) !important;
     }
+    
+    /* 红色减号按钮禁用时的颜色变浅 */
+    div[data-testid="stHorizontalBlock"]:has(.is-card) > div[data-testid="column"]:nth-child(4) button:disabled {
+        background-color: #ffb3b0 !important; 
+        color: #ffffff90 !important;
+        box-shadow: none !important;
+    }
+
+    /* ======================================================= */
 
     /* 详情页专属区块 */
     .detail-box {
@@ -355,7 +356,7 @@ if st.session_state.selected_id is not None:
                 st.rerun()
 
 # ==========================================
-# 2. 主界面 (单屏无滚动、三色圆形按钮)
+# 2. 主界面 (不换行列表、三色圆形按钮)
 # ==========================================
 else:
     nav_selected = st.segmented_control(
@@ -394,16 +395,17 @@ else:
                 avg_cost = price / wear_count if wear_count > 0 else price
                 img_b64 = get_image_base64(img_path)
 
-                # 精密比例控制（49%图文，17%黑色详情，17%绿色加号，17%红色减号）
-                c1, c2, c3, c4 = st.columns([0.49, 0.17, 0.17, 0.17], vertical_alignment="center")
+                # 将整行拆分为 4 列，依靠 CSS 进行强制横排与样式接管
+                c1, c2, c3, c4 = st.columns([0.55, 0.15, 0.15, 0.15])
 
                 with c1:
+                    # 关键标识 `<div class="is-card">`：CSS 会根据此标识接管整个 stHorizontalBlock
                     st.markdown(f"""
-                    <div class="card-left-box">
-                        <img src="data:image/jpeg;base64,{img_b64}" class="card-img">
-                        <div>
-                            <div class="cpw-price">¥{avg_cost:.2f}/次</div>
-                            <div class="sub-info">¥{price:.0f} 已穿 {wear_count} 次</div>
+                    <div class="is-card" style="display: flex; align-items: center; gap: 8px;">
+                        <img src="data:image/jpeg;base64,{img_b64}" style="width: 52px; height: 52px; border-radius: 10px; object-fit: cover; flex-shrink: 0;" />
+                        <div style="overflow: hidden; white-space: nowrap;">
+                            <div style="font-size: 16px; font-weight: 800; color: #1c1c1e;">¥{avg_cost:.2f}/次</div>
+                            <div style="font-size: 12px; color: #8e8e93;">¥{price:.0f} 已穿 {wear_count} 次</div>
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
