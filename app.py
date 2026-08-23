@@ -29,14 +29,14 @@ def get_image_base64(img_path):
             return base64.b64encode(img_file.read()).decode()
     return ""
 
-# ----------------- 终极 1:1 移动端防错位 CSS (彻底消灭滑动条) -----------------
+# ----------------- 终极移动端布局：三按钮无缝并排靠右 -----------------
 st.markdown("""
 <style>
     .stApp {
         background-color: #ffffff;
     }
 
-    /* 1. 严格锁定手机屏幕宽度 */
+    /* 锁定手机屏幕宽度 */
     .main .block-container {
         padding-left: 0.5rem !important;
         padding-right: 0.5rem !important;
@@ -70,53 +70,55 @@ st.markdown("""
     }
 
     /* ========================================================= */
-    /* 核心破解：强制衣物列表在移动端保持单行，绝对不换行！ */
+    /* 核心破解：卡片强制单行，靠右排列，干掉多余间隙 */
     /* ========================================================= */
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         align-items: center !important;
-        justify-content: space-between !important;
+        justify-content: flex-end !important; /* 强制所有内容向右对齐 */
         background-color: #ffffff;
         border-radius: 18px;
         padding: 10px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
         border: 1px solid #f2f4f2;
         margin-bottom: 12px;
-        gap: 6px !important;
+        gap: 6px !important; /* 三个按钮之间的极小紧凑间距 */
     }
 
-    /* 破解 Streamlit 强制的移动端 100% 宽度限制 */
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"] {
         width: auto !important;
         min-width: 0 !important;
         flex: none !important;
+        padding: 0 !important;
     }
 
-    /* 第 1 列：左侧图片+文字（占据剩余全部空间） */
+    /* 第 1 列：左侧图片+文字 */
+    /* 核心属性 margin-right: auto 把自己固定在左边，同时把后面的按钮全部挤到最右边 */
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(1) {
         flex: 1 1 auto !important;
         width: 100% !important;
+        margin-right: auto !important; 
         overflow: hidden;
     }
     
-    /* 第 2, 3, 4 列：右侧三个按钮（死死锁住 34px 固定宽度） */
+    /* 第 2, 3, 4 列：右侧三个按钮的固定尺寸 */
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(2),
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(3),
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(4) {
-        flex: 0 0 34px !important;
-        width: 34px !important;
+        flex: 0 0 32px !important;
+        width: 32px !important;
     }
 
     /* ========================================================= */
-    /* 统一按钮样式：正圆形、无边框、覆盖 Streamlit 原生主题 */
+    /* 按钮样式：纯正圆形、实心高亮背景、无边框 */
     /* ========================================================= */
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) button {
         border-radius: 50% !important;
-        width: 34px !important;
-        height: 34px !important;
-        min-height: 34px !important;
+        width: 32px !important;
+        height: 32px !important;
+        min-height: 32px !important;
         padding: 0 !important;
         margin: 0 !important;
         border: none !important;
@@ -128,7 +130,6 @@ st.markdown("""
         line-height: 1 !important;
     }
 
-    /* 去除原生 hover 点击时的白色边框干扰 */
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) button:hover,
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) button:focus,
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) button:active {
@@ -139,19 +140,19 @@ st.markdown("""
         outline: none !important;
     }
 
-    /* 【黑色】详情按钮 (第 2 列) */
+    /* 【黑】详情按钮 */
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(2) button {
         background-color: #2c2c2e !important;
         color: #ffffff !important;
     }
 
-    /* 【绿色】＋号按钮 (第 3 列) */
+    /* 【绿】＋号按钮 */
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(3) button {
         background-color: #34c759 !important;
         color: #ffffff !important;
     }
 
-    /* 【红色】－号按钮 (第 4 列) */
+    /* 【红】－号按钮 */
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(4) button {
         background-color: #ff3b30 !important;
         color: #ffffff !important;
@@ -168,27 +169,26 @@ st.markdown("""
         overflow: hidden;
     }
     .card-img {
-        width: 54px;
-        height: 54px;
+        width: 50px;
+        height: 50px;
         border-radius: 12px;
         object-fit: cover;
         flex-shrink: 0;
         background-color: #f8f8f8;
     }
     .cpw-price {
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 800;
         color: #1c1c1e;
         margin-bottom: 2px;
         white-space: nowrap;
     }
     .sub-info {
-        font-size: 12px;
+        font-size: 11px;
         color: #8e8e93;
         white-space: nowrap;
     }
 
-    /* 详情页专属区块 */
     .detail-box {
         background-color: #ffffff;
         border-radius: 16px;
@@ -385,7 +385,7 @@ if st.session_state.selected_id is not None:
                 st.rerun()
 
 # ==========================================
-# 2. 主界面 (全卡片与三圆形按钮严格防溢出布局)
+# 2. 主界面
 # ==========================================
 else:
     nav_selected = st.segmented_control(
@@ -423,8 +423,8 @@ else:
                 avg_cost = price / wear_count if wear_count > 0 else price
                 img_b64 = get_image_base64(img_path)
 
-                # 将每张卡片划分为：[内容区, 详情ⓘ, 绿＋, 红－] (尺寸靠 CSS 强制锁定，这里的 0.55 只是占位)
-                c1, c2, c3, c4 = st.columns([0.55, 0.15, 0.15, 0.15], vertical_alignment="center")
+                # 将每张卡片划分为四列：1列信息，3列按钮
+                c1, c2, c3, c4 = st.columns([0.65, 0.1, 0.1, 0.1], vertical_alignment="center")
 
                 with c1:
                     st.markdown(f"""
@@ -438,20 +438,17 @@ else:
                     """, unsafe_allow_html=True)
 
                 with c2:
-                    # 黑色圆形“详情”按钮
                     if st.button("ⓘ", key=f"det_{cid}"):
                         st.session_state.selected_id = cid
                         st.rerun()
 
                 with c3:
-                    # 绿色圆形“＋”按钮
                     if st.button("＋", key=f"add_{cid}"):
                         update_wear_count(cid, 1)
                         st.toast("已记录穿着！", icon="👕")
                         st.rerun()
 
                 with c4:
-                    # 红色圆形“－”按钮
                     if st.button("－", key=f"sub_{cid}", disabled=(wear_count <= 0)):
                         update_wear_count(cid, -1)
                         st.toast("已撤回穿着！")
