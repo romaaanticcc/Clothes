@@ -23,9 +23,10 @@ UPLOAD_DIR = "uploaded_clothes"
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
-# ----------------- 100% 复刻图 2 极致精美样式 CSS -----------------
+# ----------------- 100% 复刻上图卡片风格的自定义 CSS -----------------
 st.markdown("""
 <style>
+    /* 全局背景微调与锁定移动端宽度 */
     .stApp {
         background-color: #f7f9f7;
     }
@@ -48,69 +49,88 @@ st.markdown("""
         margin-bottom: 8px;
     }
     
-    /* 100% 对标图 2 的圆角大卡片 */
-    .app-card-box {
+    /* 完美对齐上图的圆角卡片：左侧图文，右侧加号在同一个白框内 */
+    .clothing-card-box {
         background-color: #ffffff;
         border-radius: 20px;
         padding: 14px 18px;
-        margin-bottom: 12px;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
-        border: 1px solid #f0f4f0;
+        margin-bottom: 14px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        border: 1px solid #eaeede;
         display: flex;
         align-items: center;
         justify-content: space-between;
         width: 100%;
         box-sizing: border-box;
+        position: relative;
     }
 
-    .card-left-part {
+    .card-left-content {
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 16px;
         flex: 1;
         min-width: 0;
     }
 
-    .card-thumb-img {
-        width: 64px;
-        height: 64px;
-        border-radius: 14px;
+    .card-img-thumb {
+        width: 65px;
+        height: 65px;
+        border-radius: 12px;
         object-fit: cover;
         flex-shrink: 0;
         background-color: #f8f8f8;
     }
 
+    /* 卡片内文字样式 */
     .cpw-price {
-        font-size: 18px;
+        font-size: 19px;
         font-weight: 800;
-        color: #1c1c1e;
+        color: #1b381b;
         margin-bottom: 3px;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    
     .sub-info {
         font-size: 13px;
         color: #8e8e93;
     }
     
-    /* 图 2 同款圆润亮绿色加号按钮 */
+    /* 完美复刻上图的绿色圆形加号按钮样式 */
     div[data-testid="stButton"] > button[kind="primary"] {
         border-radius: 50% !important;
         background-color: #34c759 !important;
         border: none !important;
         color: white !important;
-        font-size: 20px !important;
+        font-size: 22px !important;
         font-weight: bold !important;
         padding: 0 !important;
-        height: 38px !important;
-        width: 38px !important;
-        box-shadow: 0 3px 8px rgba(52, 199, 89, 0.3) !important;
+        height: 42px !important;
+        width: 42px !important;
+        min-height: 42px !important;
+        box-shadow: 0 3px 8px rgba(52, 199, 89, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     div[data-testid="stButton"] > button[kind="primary"]:hover {
         background-color: #2eb350 !important;
     }
 
-    /* 详情页面块 */
+    /* 覆盖透明按钮作为整卡点击进入详情的触发区 */
+    div[data-testid="stButton"] > button[kind="tertiary"] {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 80%;
+        height: 100%;
+        background: transparent !important;
+        border: none !important;
+        color: transparent !important;
+        min-height: 0 !important;
+        z-index: 5;
+    }
+
+    /* 详情卡片与标签样式 */
     .detail-box {
         background-color: #ecf6ed;
         border-radius: 18px;
@@ -258,11 +278,12 @@ def delete_clothing(clothing_id, image_path):
 
 init_db()
 
+# 页面状态管理
 if "selected_id" not in st.session_state:
     st.session_state.selected_id = None
 
 # ==========================================
-# 1. 详情视图
+# 1. 详情视图 (点击卡片进入)
 # ==========================================
 if st.session_state.selected_id is not None:
     item = get_clothing_by_id(st.session_state.selected_id)
@@ -298,6 +319,7 @@ if st.session_state.selected_id is not None:
     </div>
     """, unsafe_allow_html=True)
 
+    # 快捷次数操作
     c_btn1, c_btn2 = st.columns(2)
     with c_btn1:
         if st.button("➕ 今天穿 (+1)", key="dt_add", type="primary", use_container_width=True):
@@ -330,9 +352,10 @@ if st.session_state.selected_id is not None:
                 st.rerun()
 
 # ==========================================
-# 2. 主清单界面 (100% 对标图 2 完美风格)
+# 2. 主清单界面 (1:1 完美复刻上图风格)
 # ==========================================
 else:
+    # 顶部导航切换
     nav_selected = st.segmented_control(
         "导航",
         ["🧥 我的衣橱", "➕ 新增衣服", "🏷️ 分类管理"],
@@ -340,11 +363,13 @@ else:
         label_visibility="collapsed"
     )
 
+    # ===== 分页：衣橱清单 =====
     if nav_selected == "🧥 我的衣橱":
         all_items = get_clothes("全部")
         total_items = len(all_items)
         total_spent = sum(x[2] for x in all_items)
 
+        # 顶部统计指标
         st.markdown(f"""
         <div class="top-stats">
             <span>👕 {total_items}</span>
@@ -352,12 +377,14 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
+        # 顶部胶囊列 (Pills)
         categories = ["全部"] + get_categories()
         selected_cat = st.pills("分类筛选", categories, default="全部", label_visibility="collapsed")
         
         target_cat = selected_cat if selected_cat else "全部"
         displayed_items = get_clothes(target_cat)
 
+        # 类别与数量标题
         st.markdown(f"#### {target_cat} ({len(displayed_items)})")
 
         if not displayed_items:
@@ -371,36 +398,34 @@ else:
                 if os.path.exists(img_path):
                     with open(img_path, "rb") as img_file:
                         encoded_string = base64.b64encode(img_file.read()).decode()
-                        img_tag = f'<img src="data:image/jpeg;base64,{encoded_string}" class="card-thumb-img">'
+                        img_tag = f'<img src="data:image/jpeg;base64,{encoded_string}" class="card-img-thumb">'
 
-                # 卡片整体作为一个横向框，内部直接包含图文和最右侧按钮
-                col_card, col_btn = st.columns([0.82, 0.18], vertical_alignment="center")
-
-                with col_card:
-                    st.markdown(f"""
-                    <div class="app-card-box" style="margin-bottom:0;">
-                        <div class="card-left-part">
-                            {img_tag}
-                            <div style="display: flex; flex-direction: column; justify-content: center;">
-                                <div class="cpw-price">¥{avg_cost:.2f}/次</div>
-                                <div class="sub-info">¥{price:.0f} &nbsp; 已穿 {wear_count} 次</div>
-                            </div>
+                # 整体卡片容器框 (包含左侧图文与右侧加号)
+                st.markdown(f"""
+                <div class="clothing-card-box">
+                    <div class="card-left-content">
+                        {img_tag}
+                        <div style="display: flex; flex-direction: column; justify-content: center;">
+                            <div class="cpw-price">¥{avg_cost:.2f}/次</div>
+                            <div class="sub-info">¥{price:.0f} &nbsp;&nbsp; 已穿 {wear_count} 次</div>
                         </div>
                     </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # 隐形点击区：让用户点击左侧图文卡片即可直接进入详情
-                    if st.button("查看详情", key=f"det_{cid}", type="tertiary", use_container_width=True):
+                </div>
+                """, unsafe_allow_html=True)
+
+                # 在卡片同一行叠加无缝点击按钮：左侧区域点透进入详情，右侧绿色加号打卡
+                c_card_click, c_plus_btn = st.columns([0.82, 0.18], vertical_alignment="center")
+                with c_card_click:
+                    if st.button("进入详情", key=f"det_{cid}", type="tertiary"):
                         st.session_state.selected_id = cid
                         st.rerun()
-
-                with col_btn:
-                    # 右侧图 2 同款绿色加号圆纽
+                with c_plus_btn:
                     if st.button("＋", key=f"btn_add_{cid}", type="primary", help="打卡穿着 +1"):
                         update_wear_count(cid, 1)
                         st.toast(f"已记录！{name} 穿着 +1", icon="👕")
                         st.rerun()
 
+    # ===== 分页：新增衣服 =====
     elif nav_selected == "➕ 新增衣服":
         st.subheader("新增衣物")
         
@@ -452,6 +477,7 @@ else:
                 st.balloons()
                 st.rerun()
 
+    # ===== 分页：分类管理 =====
     elif nav_selected == "🏷️ 分类管理":
         st.subheader("分类设置")
         
