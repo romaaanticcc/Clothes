@@ -29,7 +29,7 @@ def get_image_base64(img_path):
             return base64.b64encode(img_file.read()).decode()
     return ""
 
-# ----------------- 1:1 还原图2 App CSS 样式 -----------------
+# ----------------- 1:1 还原目标 App CSS 样式 -----------------
 st.markdown("""
 <style>
     .stApp {
@@ -57,7 +57,7 @@ st.markdown("""
         margin-top: 8px;
     }
 
-    /* 把选择分类胶囊（Pills）高亮颜色改为绿字白底 / 绿色圆角高亮 */
+    /* 分类胶囊按钮高亮样式 */
     div[data-testid="stPills"] button {
         border-radius: 20px !important;
         border: none !important;
@@ -71,13 +71,14 @@ st.markdown("""
         color: white !important;
     }
 
-    /* 图2 独立白色圆角卡片容器 */
-    .item-wrapper {
+    /* 卡片相对定位容器 */
+    .card-container {
         position: relative;
-        margin-bottom: 14px;
         width: 100%;
+        margin-bottom: 14px;
     }
 
+    /* 白色圆角卡片基础视觉层 */
     .app-card {
         background-color: #ffffff;
         border-radius: 20px;
@@ -129,50 +130,54 @@ st.markdown("""
         color: #8e8e93;
     }
 
-    /* 图2 右侧绿色圆圈加号样式 */
+    /* 绿色圆圈加号样式 */
     .add-icon-circle {
-        width: 36px;
-        height: 36px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
         background-color: #34c759;
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
-        font-weight: 500;
+        font-size: 22px;
+        font-weight: 400;
         flex-shrink: 0;
         box-shadow: 0 2px 6px rgba(52, 199, 89, 0.25);
     }
 
-    /* 隐形交互按钮遮罩：覆盖卡片左侧（查看详情）与右侧（+1加号） */
-    .click-overlay-left {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: calc(100% - 60px);
-        height: 100%;
-        z-index: 2;
+    /* 彻底重置透明交互按钮，消除文本外溢 */
+    div[data-testid="element-container"]:has(.hide-btn) {
+        position: absolute !important;
+        top: 0 !important;
+        height: 100% !important;
+        z-index: 10 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
-    .click-overlay-right {
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 60px;
-        height: 100%;
-        z-index: 2;
+    /* 左侧透明按钮点击区（进入详情） */
+    .overlay-left {
+        left: 0 !important;
+        width: 80% !important;
     }
 
-    /* 将 Streamlit 原生按钮透明化以实现点击响应且不影响视觉 */
-    .click-overlay-left button, .click-overlay-right button {
+    /* 右侧透明按钮点击区（加一次） */
+    .overlay-right {
+        right: 0 !important;
+        width: 20% !important;
+    }
+
+    /* 强制抹除 Streamlit 原生按钮的一切视觉效果与文字 */
+    .hide-btn button {
         width: 100% !important;
         height: 100% !important;
         background: transparent !important;
         border: none !important;
         color: transparent !important;
+        font-size: 0px !important;
         padding: 0 !important;
-        min-height: 0 !important;
+        box-shadow: none !important;
     }
 
     /* 详情页专属区块 */
@@ -387,7 +392,7 @@ else:
         total_items = len(all_items)
         total_spent = sum(x[2] for x in all_items)
 
-        # 顶部看板：👕 3   💰 145 (1:1还原图2)
+        # 顶部看板：👕 3   💰 145
         st.markdown(f"""
         <div class="top-stats">
             <span>👕 {total_items}</span>
@@ -411,9 +416,9 @@ else:
                 avg_cost = price / wear_count if wear_count > 0 else price
                 img_b64 = get_image_base64(img_path)
 
-                # 渲染图2风格完全一致的单张卡片
+                # 完美复刻目标卡片 DOM 结构
                 st.markdown(f"""
-                <div class="item-wrapper">
+                <div class="card-container">
                     <div class="app-card">
                         <div class="app-card-left">
                             <img src="data:image/jpeg;base64,{img_b64}" class="app-card-img">
@@ -427,17 +432,20 @@ else:
                 </div>
                 """, unsafe_allow_html=True)
 
-                # 建立透明点击覆盖区（左侧进详情，右侧加次数）
-                col_left, col_right = st.columns([0.8, 0.2])
-                with col_left:
-                    if st.button("详情", key=f"det_{cid}", type="tertiary", use_container_width=True):
-                        st.session_state.selected_id = cid
-                        st.rerun()
-                with col_right:
-                    if st.button("加", key=f"add_{cid}", type="tertiary", use_container_width=True):
-                        update_wear_count(cid, 1)
-                        st.toast("已记录穿着！", icon="👕")
-                        st.rerun()
+                # 隐形响应区 - 左侧点击进入详情
+                st.markdown('<div class="hide-btn overlay-left">', unsafe_allow_html=True)
+                if st.button("", key=f"det_{cid}"):
+                    st.session_state.selected_id = cid
+                    st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
+
+                # 隐形响应区 - 右侧绿色加号点击 +1
+                st.markdown('<div class="hide-btn overlay-right">', unsafe_allow_html=True)
+                if st.button("", key=f"add_{cid}"):
+                    update_wear_count(cid, 1)
+                    st.toast("已记录穿着！", icon="👕")
+                    st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
 
     elif nav_selected == "➕ 新增衣服":
         st.subheader("新增衣物")
