@@ -56,34 +56,26 @@ st.markdown("""
         margin-bottom: 8px;
     }
 
-    /* 把选择分类胶囊（Pills）高亮颜色改为绿字白底 / 绿色高亮 */
+    /* 分类胶囊标签高亮颜色 */
     div[data-testid="stPills"] button[aria-selected="true"] {
         background-color: #34c759 !important;
         color: white !important;
     }
 
     /* 独立白色圆角卡片 */
-    .app-card {
+    .app-card-box {
         background-color: #ffffff;
         border-radius: 18px;
-        padding: 12px 16px;
+        padding: 10px 14px;
         margin-bottom: 12px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
         border: 1px solid #f0f4f0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        box-sizing: border-box;
     }
 
     .app-card-left {
         display: flex;
         align-items: center;
         gap: 14px;
-        flex: 1;
-        min-width: 0;
-        cursor: pointer;
     }
 
     /* 图片缩略图 */
@@ -116,30 +108,33 @@ st.markdown("""
         color: #a0b2a0;
     }
 
-    /* 绿色加号按钮 */
-    .add-btn-link {
-        background-color: #34c759;
+    /* Streamlit 原生 Column 在局部卡片内的宽度微调 */
+    div[data-testid="column"] {
+        min-width: 0 !important;
+    }
+
+    /* 绿色加号按钮样式 */
+    div[data-testid="stButton"] > button[kind="primary"] {
+        border-radius: 50% !important;
+        background-color: #34c759 !important;
+        border: none !important;
         color: white !important;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        font-weight: bold;
-        text-decoration: none !important;
-        box-shadow: 0 2px 6px rgba(52, 199, 89, 0.3);
-        border: none;
-        flex-shrink: 0;
+        font-size: 20px !important;
+        font-weight: bold !important;
+        height: 36px !important;
+        width: 36px !important;
+        padding: 0 !important;
+        box-shadow: 0 2px 6px rgba(52, 199, 89, 0.3) !important;
+        margin-left: auto !important;
+        display: block !important;
     }
 
-    .add-btn-link:active {
-        transform: scale(0.92);
-        background-color: #2eb350;
+    div[data-testid="stButton"] > button[kind="primary"]:active {
+        background-color: #2eb350 !important;
+        transform: scale(0.95);
     }
 
-    /* 隐藏原生透明按钮边框（实现点击卡片进入详情） */
+    /* 详情小文本按钮样式 */
     div[data-testid="stButton"] > button[kind="tertiary"] {
         padding: 0 !important;
         min-height: 0 !important;
@@ -278,20 +273,51 @@ def delete_clothing(clothing_id, image_path):
 
 init_db()
 
-# 点击加号链接后触发穿着记数
-params = st.query_params
-if "add_wear" in params:
-    try:
-        clothing_id = int(params["add_wear"])
-        update_wear_count(clothing_id, 1)
-        st.toast("已记录穿着！", icon="👕")
-    except Exception:
-        pass
-    st.query_params.clear()
-    st.rerun()
-
 if "selected_id" not in st.session_state:
     st.session_state.selected_id = None
+
+# ==========================================
+# 核心：局部刷新卡片 Component (实现零白屏打卡)
+# ==========================================
+@st.fragment
+def render_clothing_card(item):
+    cid, name, price, wear_count, img_path, cat, p_year, _, _ = item
+    
+    # 重新获取当前最新数据（局部更新核心）
+    curr_item = get_clothing_by_id(cid)
+    if curr_item:
+        _, name, price, wear_count, img_path, _, _, _, _ = curr_item
+
+    avg_cost = price / wear_count if wear_count > 0 else price
+    img_b64 = get_image_base64(img_path)
+
+    # 包含外框的白色卡片容器
+    st.markdown('<div class="app-card-box">', unsafe_allow_html=True)
+    c_left, c_right = st.columns([3.8, 1.2], vertical_alignment="center")
+    
+    with c_left:
+        st.markdown(f"""
+        <div class="app-card-left">
+            <img src="data:image/jpeg;base64,{img_b64}" class="app-card-img">
+            <div class="app-card-info">
+                <div class="cpw-price">¥{avg_cost:.2f}/次</div>
+                <div class="sub-info">¥{price:.0f} 已穿 {wear_count} 次</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with c_right:
+        # 点击加号仅更新此局部 Fragment，实现无闪烁瞬间计算
+        if st.button("＋", key=f"btn_add_{cid}", type="primary"):
+            update_wear_count(cid, 1)
+            st.toast("已记录穿着！", icon="👕")
+            st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    if st.button("查看详情", key=f"det_{cid}", type="tertiary"):
+        st.session_state.selected_id = cid
+        st.rerun()
 
 # ==========================================
 # 1. 详情视图
@@ -358,7 +384,7 @@ if st.session_state.selected_id is not None:
                 st.rerun()
 
 # ==========================================
-# 2. 主界面 (1:1 还原 APP)
+# 2. 主界面
 # ==========================================
 else:
     nav_selected = st.segmented_control(
@@ -393,28 +419,8 @@ else:
             st.info("该分类下暂无衣物，请选择「➕ 新增衣服」上传！")
         else:
             for item in displayed_items:
-                cid, name, price, wear_count, img_path, cat, p_year, _, _ = item
-                avg_cost = price / wear_count if wear_count > 0 else price
-                img_b64 = get_image_base64(img_path)
-
-                # 渲染无冗余文字的纯净化 App 卡片
-                st.markdown(f"""
-                <div class="app-card">
-                    <div class="app-card-left">
-                        <img src="data:image/jpeg;base64,{img_b64}" class="app-card-img">
-                        <div class="app-card-info">
-                            <div class="cpw-price">¥{avg_cost:.2f}/次</div>
-                            <div class="sub-info">¥{price:.0f} 已穿 {wear_count} 次</div>
-                        </div>
-                    </div>
-                    <a href="?add_wear={cid}" class="add-btn-link" target="_self">＋</a>
-                </div>
-                """, unsafe_allow_html=True)
-
-                # 隐形详情按钮（仅保留功能点击，无多余 UI 干扰）
-                if st.button("查看详情", key=f"det_{cid}", type="tertiary"):
-                    st.session_state.selected_id = cid
-                    st.rerun()
+                # 渲染无闪烁局部刷新卡片
+                render_clothing_card(item)
 
     elif nav_selected == "➕ 新增衣服":
         st.subheader("新增衣物")
