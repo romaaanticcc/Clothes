@@ -2,6 +2,7 @@ import streamlit as st
 import sqlite3
 import os
 import uuid
+import base64
 from datetime import datetime
 from PIL import Image, ImageOps
 import io
@@ -21,6 +22,13 @@ UPLOAD_DIR = "uploaded_clothes"
 
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
+
+# ==================== 重要：先把 get_image_base64 函数定义在这里 ====================
+def get_image_base64(img_path):
+    if os.path.exists(img_path):
+        with open(img_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    return ""
 
 # ==================== 完全仿图2样式 - 红米手机适配 ====================
 st.markdown("""
@@ -356,6 +364,7 @@ def delete_category(cat_name):
         c.execute("SELECT COUNT(*) FROM clothes WHERE category = ?", (cat_name.strip(),))
         count = c.fetchone()[0]
         if count > 0:
+            conn.close()
             return False, f"有 {count} 件衣服使用此分类，请先移动或删除这些衣服"
         c.execute("DELETE FROM categories WHERE name = ?", (cat_name.strip(),))
         conn.commit()
@@ -541,12 +550,13 @@ else:
             for item in displayed_items:
                 cid, name, price, wear_count, img_path, cat, p_year, _, _ = item
                 avg_cost = price / wear_count if wear_count > 0 else price
+                img_b64 = get_image_base64(img_path)
 
                 # 卡片HTML - 完全仿图2
                 st.markdown(f"""
                 <div class="clothing-card">
                     <div class="card-left">
-                        <img src="data:image/jpeg;base64,{get_image_base64(img_path)}" class="card-img">
+                        <img src="data:image/jpeg;base64,{img_b64}" class="card-img">
                         <div class="card-info">
                             <div class="card-price">¥{avg_cost:.2f}/次</div>
                             <div class="card-sub">¥{price:.0f} 已穿 {wear_count} 次</div>
@@ -641,21 +651,14 @@ else:
         cats = get_categories()
         
         for c in cats:
-            col1, col2 = st.columns([0.8, 0.2])
+            col1, col2 = st.columns([0.7, 0.3])
             with col1:
                 st.markdown(f"`{c}`")
             with col2:
-                if st.button("🗑️", key=f"del_cat_{c}", help=f"删除分类：{c}"):
+                if st.button("🗑️ 删除", key=f"del_cat_{c}", help=f"删除分类：{c}"):
                     success, msg = delete_category(c)
                     if success:
                         st.toast(f"✅ {msg}")
                         st.rerun()
                     else:
                         st.error(f"❌ {msg}")
-
-def get_image_base64(img_path):
-    if os.path.exists(img_path):
-        with open(img_path, "rb") as img_file:
-            import base64
-            return base64.b64encode(img_file.read()).decode()
-    return ""
