@@ -7,7 +7,7 @@ from PIL import Image, ImageOps
 import io
 from streamlit_cropper import st_cropper
 
-# 支援 iPhone HEIC 格式
+# 支持 iPhone HEIC 格式
 try:
     import pillow_heif
     pillow_heif.register_heif_opener()
@@ -22,15 +22,15 @@ UPLOAD_DIR = "uploaded_clothes"
 if not os.path.exists(UPLOAD_DIR):
     os.makedirs(UPLOAD_DIR)
 
-# ----------------- 自定义 CSS（还原 App 風格） -----------------
+# ----------------- 自定义 CSS -----------------
 st.markdown("""
 <style>
-    /* 全域字体与背景微调 */
+    /* 全局背景微调 */
     .stApp {
         background-color: #f7f9f7;
     }
     
-    /* 顶部部数据看板 */
+    /* 顶部数据看板 */
     .top-stats {
         display: flex;
         align-items: center;
@@ -41,17 +41,7 @@ st.markdown("""
         margin-bottom: 8px;
     }
     
-    /* 橫向衣服卡片容器 */
-    .clothing-card {
-        background-color: #ffffff;
-        border-radius: 16px;
-        padding: 12px 14px;
-        margin-bottom: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        border: 1px solid #edf2ed;
-    }
-    
-    /* 卡片內文字樣式 */
+    /* 卡片内文字样式 */
     .cpw-price {
         font-size: 19px;
         font-weight: 800;
@@ -67,7 +57,7 @@ st.markdown("""
     /* 圆形加号按钮样式 */
     div[data-testid="stButton"] > button[kind="primary"] {
         border-radius: 50%;
-        background-color: #34c759;
+        background-color: #ff5252;
         border: none;
         color: white;
         font-size: 20px;
@@ -75,14 +65,14 @@ st.markdown("""
         padding: 0;
         height: 42px;
         width: 42px;
-        box-shadow: 0 3px 6px rgba(52, 199, 89, 0.3);
+        box-shadow: 0 3px 6px rgba(255, 82, 82, 0.3);
     }
     div[data-testid="stButton"] > button[kind="primary"]:hover {
-        background-color: #2eb350;
+        background-color: #e04848;
         color: white;
     }
 
-    /* 詳情卡片與標籤樣式 */
+    /* 详情卡片与标签样式 */
     .detail-box {
         background-color: #ecf6ed;
         border-radius: 18px;
@@ -108,7 +98,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ----------------- 资料库操作 -----------------
+# ----------------- 数据库操作 -----------------
 def init_db():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
@@ -132,7 +122,7 @@ def init_db():
             name TEXT UNIQUE
         )
     ''')
-    defaults = ['上衣', '裤子', '裙子', '外套', '鞋靴', '配件']
+    defaults = ['上衣', '裤子', '外套', '洋装', '鞋靴', '包包配件', '裙子', '配件']
     for cat in defaults:
         c.execute("INSERT OR IGNORE INTO categories (name) VALUES (?)", (cat,))
     conn.commit()
@@ -226,8 +216,6 @@ init_db()
 # 页面状态
 if "selected_id" not in st.session_state:
     st.session_state.selected_id = None
-if "current_tab" not in st.session_state:
-    st.session_state.current_tab = "衣柜"
 
 # ==========================================
 # 1. 详情视图 (点击衣服进入)
@@ -255,7 +243,7 @@ if st.session_state.selected_id is not None:
     st.markdown(f"""
     <div class="detail-box">
         <div style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">基本信息</div>
-        <div class="detail-row"><span>👥 类別</span><span><b>{category}</b></span></div>
+        <div class="detail-row"><span>👥 类别</span><span><b>{category}</b></span></div>
         <div class="detail-row"><span>💰 价格</span><span>¥{price:.2f}</span></div>
         <div class="detail-row"><span>🔄 穿着次数</span><span>{wear_count} 次</span></div>
         <div class="detail-row"><span>🕒 上次穿着</span><span>{last_worn}</span></div>
@@ -280,7 +268,7 @@ if st.session_state.selected_id is not None:
             update_wear_count(cid, -1)
             st.rerun()
 
-    with st.expander("⚙️ 编辑衣物资料 / 刪除"):
+    with st.expander("⚙️ 编辑衣物资料 / 删除"):
         edit_name = st.text_input("名称", value=name)
         edit_price = st.number_input("价格 (¥)", value=float(price), step=10.0)
         cats = get_categories()
@@ -295,13 +283,13 @@ if st.session_state.selected_id is not None:
                 st.success("已更新！")
                 st.rerun()
         with e2:
-            if st.button("🗑️ 刪除衣服", type="secondary", use_container_width=True):
+            if st.button("🗑️ 删除衣服", type="secondary", use_container_width=True):
                 delete_clothing(cid, img_path)
                 st.session_state.selected_id = None
                 st.rerun()
 
 # ==========================================
-# 2. 主清单介面 (对标截图风格)
+# 2. 主清单界面
 # ==========================================
 else:
     # 顶部导航切换
@@ -326,7 +314,7 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-        # 顶部分类膠囊列 (Pills)
+        # 顶部分类胶囊列 (Pills)
         categories = ["全部"] + get_categories()
         selected_cat = st.pills("分类筛选", categories, default="全部", label_visibility="collapsed")
         
@@ -337,15 +325,16 @@ else:
         st.markdown(f"#### {target_cat} ({len(displayed_items)})")
 
         if not displayed_items:
-            st.info("该分类下暂无衣物，请点选择「➕ 新增衣服」上传！")
+            st.info("该分类下暂无衣物，请选择「➕ 新增衣服」上传！")
         else:
-            # 橫向卡片列表展示
+            # 横向卡片列表展示
             for item in displayed_items:
                 cid, name, price, wear_count, img_path, cat, p_year, _, _ = item
                 avg_cost = price / wear_count if wear_count > 0 else price
 
                 with st.container():
-                    col_img, col_info, col_action = st.columns([1.1, 2.5, 0.8], vertical_alignment="center")
+                    # 调整列比例适应移动端，并支持自适应对齐
+                    col_img, col_info, col_action = st.columns([1.2, 2.0, 0.8], vertical_alignment="center")
                     
                     with col_img:
                         if os.path.exists(img_path):
@@ -354,19 +343,20 @@ else:
                     with col_info:
                         st.markdown(f"<div class='cpw-price'>¥{avg_cost:.2f}/次</div>", unsafe_allow_html=True)
                         st.markdown(f"<div class='sub-info'>¥{price:.0f} &nbsp;&nbsp; 已穿 {wear_count} 次</div>", unsafe_allow_html=True)
-                        if st.button("詳情 ❯", key=f"det_{cid}", type="tertiary"):
+                        # 增加按钮宽度以在手机移动端上保持良好的点击体验
+                        if st.button("详情 ❯", key=f"det_{cid}", type="tertiary", use_container_width=True):
                             st.session_state.selected_id = cid
                             st.rerun()
 
                     with col_action:
-                        if st.button("＋", key=f"btn_add_{cid}", type="primary", help="打卡穿著 +1"):
+                        if st.button("＋", key=f"btn_add_{cid}", type="primary", help="打卡穿着 +1"):
                             update_wear_count(cid, 1)
-                            st.toast(f"已記錄！{name} 穿著 +1", icon="👕")
+                            st.toast(f"已记录！{name} 穿着 +1", icon="👕")
                             st.rerun()
                     
                     st.divider()
 
-    # ===== 分页：新增衣服 (含相机/上传成功与剪切) =====
+    # ===== 分页：新增衣服 =====
     elif nav_selected == "➕ 新增衣服":
         st.subheader("新增衣物")
         
@@ -395,19 +385,23 @@ else:
 
         cropped_img = None
         if raw_img_bytes:
+            # 1. 显示上传/拍摄成功提示
+            st.success("📸 图片上传成功！")
+            
             try:
-                st.write("✂️ **拖曳选框进行图片裁切：**")
+                st.write("✂️ **拖拽选框进行自由图片裁剪：**")
                 img_obj = Image.open(io.BytesIO(raw_img_bytes))
                 img_obj = ImageOps.exif_transpose(img_obj)
                 
+                # 4. aspect_ratio=None 允许任意比例自由裁剪
                 cropped_img = st_cropper(
                     img_obj,
                     realtime_update=True,
                     box_color="#34c759",
-                    aspect_ratio=(3, 4)
+                    aspect_ratio=None
                 )
             except Exception:
-                st.error("图片读取失敗，请确认档案格式是否正确。")
+                st.error("图片读取失败，请确认文件格式是否正确。")
 
         if st.button("💾 保存并加入衣柜", type="primary", use_container_width=True):
             if not item_name.strip():
@@ -421,8 +415,8 @@ else:
 
     # ===== 分页：分类管理 =====
     elif nav_selected == "🏷️ 分类管理":
-        st.subheader("分类设定")
-        new_c = st.text_input("自定义新分类名称", placeholder="例如：洋装、运动服")
+        st.subheader("分类设置")
+        new_c = st.text_input("自定义新分类名称", placeholder="例如：连衣裙、运动服")
         if st.button("➕ 新增分类"):
             if new_c.strip():
                 add_category(new_c)
@@ -430,5 +424,5 @@ else:
                 st.rerun()
         
         st.divider()
-        st.write("**目前分类标签：**")
+        st.write("**当前分类标签：**")
         st.write("、".join([f"`{c}`" for c in get_categories()]))
