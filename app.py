@@ -27,7 +27,7 @@ def get_image_base64(img_path):
     with open(img_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-# ----------------- 终极移动端卡片布局 CSS (完美还原图2) -----------------
+# ----------------- 强制手机端显示为图 2 电脑端横向布局的 CSS -----------------
 st.markdown("""
 <style>
     .stApp {
@@ -44,88 +44,85 @@ st.markdown("""
         margin-bottom: 12px;
     }
     
-    /* 核心机制：利用隐藏标签精准定位列表项，强制横向显示为白色圆角卡片 */
-    .list-card-marker { display: none; }
+    /* 1. 关键：覆盖 Streamlit 手机端的自动堆叠规则，强制保持横向排列 */
+    div[data-testid="column"] {
+        width: auto !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+    }
     
-    .list-card-marker + div[data-testid="stHorizontalBlock"] {
+    /* 强制横向 flex 容器在移动端不换行 */
+    div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         align-items: center !important;
-        background-color: #ffffff;
-        border-radius: 16px;
-        padding: 12px 14px;
-        margin-bottom: 14px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-        border: 1px solid #edf2ed;
+        justify-content: space-between !important;
+        padding: 6px 0 !important;
     }
-    
-    /* 强制列宽与边距，杜绝手机端自动换行堆叠 */
-    .list-card-marker + div > div[data-testid="column"]:nth-child(1) {
-        flex: 0 0 68px !important; 
-        width: 68px !important; 
-        min-width: 0 !important;
+
+    /* 2. 精确控制 3 列的宽度比例（与图 2 一致） */
+    div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(1) {
+        flex: 0 0 75px !important; /* 第一列：图片宽度固定 75px */
+        width: 75px !important;
     }
-    .list-card-marker + div > div[data-testid="column"]:nth-child(2) {
-        flex: 1 1 auto !important; 
-        width: auto !important; 
-        min-width: 0 !important;
+    div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(2) {
+        flex: 1 1 auto !important; /* 第二列：文字自适应占据中间空间 */
         padding-left: 12px !important;
     }
-    .list-card-marker + div > div[data-testid="column"]:nth-child(3) {
-        flex: 0 0 45px !important; 
-        width: 45px !important; 
-        min-width: 0 !important;
+    div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(3) {
+        flex: 0 0 50px !important; /* 第三列：按钮宽度固定 50px */
         display: flex !important;
         justify-content: flex-end !important;
     }
-    
-    /* HTML 卡片图片限制 */
+
+    /* 3. 卡片图片样式（严格限制尺寸） */
     .card-img {
-        width: 68px;
-        height: 68px;
-        border-radius: 10px;
+        width: 75px;
+        height: 55px;
+        border-radius: 8px;
         object-fit: cover;
         display: block;
     }
 
-    /* 文字排版 */
+    /* 4. 文字排版 */
     .cpw-price {
-        font-size: 16px;
+        font-size: 17px;
         font-weight: 800;
         color: #1b381b;
         margin-bottom: 2px;
-        font-family: "Segoe UI", Roboto, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     .sub-info {
-        font-size: 12px;
-        color: #7a8b7a;
+        font-size: 13px;
+        color: #8c9c8c;
     }
 
-    /* 还原图2中的绿色圆形加号按钮 */
-    .list-card-marker + div > div[data-testid="column"]:nth-child(3) button[kind="primary"] {
-        border-radius: 50% !important;
-        background-color: #2bd365 !important;
+    /* 5. 还原图 2 中的红色方角圆形加号按钮 */
+    div[data-testid="column"]:nth-child(3) button[kind="primary"] {
+        border-radius: 10px !important;
+        background-color: #ff5252 !important;
         border: none !important;
         color: white !important;
         font-size: 20px !important;
-        height: 34px !important;
-        width: 34px !important;
+        height: 42px !important;
+        width: 42px !important;
         padding: 0 !important;
-        box-shadow: 0 2px 6px rgba(43, 211, 101, 0.3) !important;
+        box-shadow: 0 2px 6px rgba(255, 82, 82, 0.25) !important;
     }
-    .list-card-marker + div > div[data-testid="column"]:nth-child(3) button[kind="primary"]:hover {
-        background-color: #24b856 !important;
+    div[data-testid="column"]:nth-child(3) button[kind="primary"]:hover {
+        background-color: #ff3838 !important;
     }
     
-    /* 详情小按钮透明化融入 */
+    /* 详情按钮 */
     button[kind="tertiary"] {
         padding: 0 !important;
         min-height: 0 !important;
-        font-size: 13px !important;
-        color: #8c9c8c !important;
+        font-size: 14px !important;
+        color: #5c705c !important;
     }
     
-    /* 详情页专属区块样式 */
+    /* 详情页专属区块 */
     .detail-box {
         background-color: #ffffff;
         border-radius: 16px;
@@ -139,15 +136,6 @@ st.markdown("""
         justify-content: space-between;
         padding: 8px 0;
         font-size: 15px;
-    }
-    .season-pill {
-        display: inline-block;
-        background: #f0f2f0;
-        padding: 5px 12px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        color: #2b512a;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -267,7 +255,7 @@ if "selected_id" not in st.session_state:
     st.session_state.selected_id = None
 
 # ==========================================
-# 1. 详情视图 (点击衣服详情进入)
+# 1. 详情视图
 # ==========================================
 if st.session_state.selected_id is not None:
     item = get_clothing_by_id(st.session_state.selected_id)
@@ -331,7 +319,7 @@ if st.session_state.selected_id is not None:
                 st.rerun()
 
 # ==========================================
-# 2. 主界面
+# 2. 主界面 (与图 2 电脑端完全一致的布局)
 # ==========================================
 else:
     nav_selected = st.segmented_control(
@@ -341,7 +329,7 @@ else:
         label_visibility="collapsed"
     )
 
-    # ===== 分页：衣柜清单 (列表卡片样式) =====
+    # ===== 分页：衣柜清单 =====
     if nav_selected == "👚 我的衣柜":
         all_items = get_clothes("全部")
         total_items = len(all_items)
@@ -360,7 +348,7 @@ else:
         target_cat = selected_cat if selected_cat else "全部"
         displayed_items = get_clothes(target_cat)
 
-        st.markdown(f"#### {target_cat} ({len(displayed_items)})")
+        st.markdown(f"### {target_cat} ({len(displayed_items)})")
 
         if not displayed_items:
             st.info("该分类下暂无衣物，请选择「➕ 新增衣服」上传！")
@@ -369,17 +357,13 @@ else:
                 cid, name, price, wear_count, img_path, cat, p_year, _, _ = item
                 avg_cost = price / wear_count if wear_count > 0 else price
 
-                # 注入隐藏标记，激活卡片强制横向的 CSS 样式
-                st.markdown('<div class="list-card-marker"></div>', unsafe_allow_html=True)
-                
                 c_img, c_info, c_btn = st.columns([1, 3, 1], vertical_alignment="center")
                 
                 with c_img:
                     if os.path.exists(img_path):
                         img_b64 = get_image_base64(img_path)
-                        # 直接用 HTML 固定图片宽高比例，永不放大
                         st.markdown(f'<img src="data:image/jpeg;base64,{img_b64}" class="card-img">', unsafe_allow_html=True)
-                        
+
                 with c_info:
                     st.markdown(f"<div class='cpw-price'>¥{avg_cost:.2f}/次</div>", unsafe_allow_html=True)
                     st.markdown(f"<div class='sub-info'>¥{price:.0f} &nbsp;&nbsp; 已穿 {wear_count} 次</div>", unsafe_allow_html=True)
@@ -393,7 +377,9 @@ else:
                         st.toast(f"已记录穿着！", icon="👕")
                         st.rerun()
 
-    # ===== 分页：新增衣服 (仅相册上传) =====
+                st.divider()
+
+    # ===== 分页：新增衣服 =====
     elif nav_selected == "➕ 新增衣服":
         st.subheader("新增衣物")
         
@@ -425,7 +411,7 @@ else:
                 cropped_img = st_cropper(
                     img_obj,
                     realtime_update=True,
-                    box_color="#2bd365",
+                    box_color="#ff5252",
                     aspect_ratio=None
                 )
             except Exception:
