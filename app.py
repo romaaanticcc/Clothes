@@ -27,11 +27,20 @@ def get_image_base64(img_path):
     with open(img_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode()
 
-# ----------------- 手机端紧凑内聚 CSS -----------------
+# ----------------- 适配手机屏幕宽度的紧凑 CSS -----------------
 st.markdown("""
 <style>
+    /* 全局页面背景与外边距重置 */
     .stApp {
         background-color: #f7f9f7;
+    }
+    
+    /* 缩减 Streamlit 默认的主内容容器外边距 */
+    .main .block-container {
+        padding-left: 0.8rem !important;
+        padding-right: 0.8rem !important;
+        padding-top: 1rem !important;
+        max-width: 100% !important;
     }
     
     .top-stats {
@@ -41,90 +50,83 @@ st.markdown("""
         font-size: 18px;
         font-weight: 700;
         color: #1b381b;
-        margin-bottom: 12px;
-    }
-    
-    /* 强制横向不超屏、紧凑排列 */
-    div[data-testid="stHorizontalBlock"] {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 8px !important;
-        width: 100% !important;
+        margin-bottom: 8px;
     }
 
-    /* 精确固定各列比例，紧凑贴合 */
-    div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(1) {
-        flex: 0 0 70px !important; /* 第一列图片按钮宽度 */
-        width: 70px !important;
-        min-width: 70px !important;
-    }
-    div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(2) {
-        flex: 1 1 auto !important; /* 第二列文字自适应填充，去除多余间距 */
-        width: auto !important;
-        min-width: 0 !important;
-        padding-left: 4px !important;
-    }
-    div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:nth-child(3) {
-        flex: 0 0 45px !important; /* 第三列加号按钮宽度 */
-        width: 45px !important;
-        min-width: 45px !important;
-        display: flex !important;
-        justify-content: flex-end !important;
+    /* 列表卡片：原生 HTML flex 布局（解决自动溢出横向滑动问题） */
+    .card-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 8px 10px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+        border: 1px solid #edf2ed;
+        width: 100%;
+        box-sizing: border-box;
     }
 
-    /* 图片点击按钮化美化 */
-    div[data-testid="column"]:nth-child(1) button {
-        padding: 0 !important;
-        border: none !important;
-        background: transparent !important;
-        box-shadow: none !important;
+    .card-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 0; /* 允许文本内容适度缩减，防止撑开屏幕 */
     }
 
-    /* 卡片缩略图样式 */
     .card-img {
         width: 65px;
-        height: 50px;
-        border-radius: 8px;
+        height: 52px;
+        border-radius: 6px;
         object-fit: cover;
-        display: block;
+        flex-shrink: 0;
     }
 
-    /* 排版字体紧凑化 */
+    .card-info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
     .cpw-price {
         font-size: 16px;
         font-weight: 800;
         color: #1b381b;
         line-height: 1.2;
-        margin-bottom: 2px;
     }
+
     .sub-info {
         font-size: 12px;
         color: #8c9c8c;
-        line-height: 1.2;
+        margin-top: 2px;
     }
 
-    /* 红色圆形/圆角加号按钮 */
-    div[data-testid="column"]:nth-child(3) button[kind="primary"] {
-        border-radius: 10px !important;
+    /* 调整嵌入在 HTML 中的 Streamlit 按钮位置 */
+    div[data-testid="column"] {
+        min-width: 0 !important;
+    }
+
+    div[data-testid="stButton"] > button[kind="primary"] {
+        border-radius: 8px !important;
         background-color: #ff5252 !important;
         border: none !important;
         color: white !important;
-        font-size: 20px !important;
+        font-size: 18px !important;
         height: 38px !important;
         width: 38px !important;
         padding: 0 !important;
-        box-shadow: 0 2px 6px rgba(255, 82, 82, 0.25) !important;
+        box-shadow: 0 2px 5px rgba(255, 82, 82, 0.2) !important;
     }
-    
-    /* 详情链接 */
-    button[kind="tertiary"] {
-        padding: 0 !important;
-        min-height: 0 !important;
-        font-size: 13px !important;
-        color: #5c705c !important;
+
+    /* 详情小文本链接样式 */
+    .detail-link {
+        font-size: 13px;
+        color: #4a6b4a;
+        cursor: pointer;
+        margin-top: 2px;
+        display: inline-block;
     }
     
     /* 详情页专属区块 */
@@ -260,7 +262,7 @@ if "selected_id" not in st.session_state:
     st.session_state.selected_id = None
 
 # ==========================================
-# 1. 详情视图 (放大显示大图)
+# 1. 详情视图
 # ==========================================
 if st.session_state.selected_id is not None:
     item = get_clothing_by_id(st.session_state.selected_id)
@@ -324,7 +326,7 @@ if st.session_state.selected_id is not None:
                 st.rerun()
 
 # ==========================================
-# 2. 主界面 (紧凑无溢出布局 + 点击图片看大图)
+# 2. 主界面
 # ==========================================
 else:
     nav_selected = st.segmented_control(
@@ -362,30 +364,24 @@ else:
                 cid, name, price, wear_count, img_path, cat, p_year, _, _ = item
                 avg_cost = price / wear_count if wear_count > 0 else price
 
-                c_img, c_info, c_btn = st.columns([1, 3, 1], vertical_alignment="center")
-                
-                with c_img:
-                    if os.path.exists(img_path):
-                        img_b64 = get_image_base64(img_path)
-                        # 点击图片进入详情页（大图）
-                        if st.button(" ", key=f"img_btn_{cid}", help="点击查看大图"):
-                            st.session_state.selected_id = cid
-                            st.rerun()
-                        # 使用 CSS 绝对定位把 HTML 图片覆盖在透明按钮上
-                        st.markdown(
-                            f'<style>div[data-testid="column"]:nth-child(1) button[key="img_btn_{cid}"] '
-                            f'{{ position: relative; }}</style>', 
-                            unsafe_allow_html=True
-                        )
-                        st.markdown(
-                            f'<script>document.querySelector(\'button[kind="secondary"][aria-label=" "]\')</script>', 
-                            unsafe_allow_html=True
-                        )
-                        st.markdown(f'<img src="data:image/jpeg;base64,{img_b64}" class="card-img" style="margin-top:-38px; pointer-events:none;">', unsafe_allow_html=True)
+                img_b64 = get_image_base64(img_path) if os.path.exists(img_path) else ""
 
-                with c_info:
-                    st.markdown(f"<div class='cpw-price'>¥{avg_cost:.2f}/次</div>", unsafe_allow_html=True)
-                    st.markdown(f"<div class='sub-info'>¥{price:.0f} &nbsp;&nbsp; 已穿 {wear_count} 次</div>", unsafe_allow_html=True)
+                # 使用紧凑型 2 列布局：左侧存放（图片+文字描述），右侧存放打卡按钮
+                c_content, c_btn = st.columns([5, 1], vertical_alignment="center")
+
+                with c_content:
+                    st.markdown(f"""
+                    <div class="card-item" style="box-shadow:none; border:none; padding:0; margin:0;">
+                        <div class="card-left">
+                            <img src="data:image/jpeg;base64,{img_b64}" class="card-img">
+                            <div class="card-info">
+                                <div class="cpw-price">¥{avg_cost:.2f}/次</div>
+                                <div class="sub-info">¥{price:.0f} 已穿{wear_count}次</div>
+                            </div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
                     if st.button("详情 ❯", key=f"det_{cid}", type="tertiary"):
                         st.session_state.selected_id = cid
                         st.rerun()
@@ -393,7 +389,7 @@ else:
                 with c_btn:
                     if st.button("＋", key=f"btn_add_{cid}", type="primary"):
                         update_wear_count(cid, 1)
-                        st.toast(f"已记录穿着！", icon="👕")
+                        st.toast("已记录穿着！", icon="👕")
                         st.rerun()
 
                 st.divider()
