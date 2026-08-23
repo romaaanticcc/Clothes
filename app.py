@@ -29,20 +29,23 @@ def get_image_base64(img_path):
             return base64.b64encode(img_file.read()).decode()
     return ""
 
-# ----------------- 极致防错位 CSS：左侧拉伸，右侧三按钮紧贴 -----------------
+# ----------------- 终极移动端布局：防溢出 + 纯色圆形按钮 -----------------
 st.markdown("""
 <style>
-    .stApp {
-        background-color: #ffffff;
+    /* 1. 彻底禁用全局横向滚动 */
+    .stApp, .main {
+        overflow-x: hidden !important;
+        background-color: #f7f9f7;
     }
 
-    /* 锁定手机屏幕最大宽度，居中显示 */
+    /* 2. 锁定手机屏幕宽度 */
     .main .block-container {
         padding-left: 0.5rem !important;
         padding-right: 0.5rem !important;
         padding-top: 0.5rem !important;
         max-width: 420px !important;
         margin: 0 auto !important;
+        overflow-x: hidden !important;
     }
 
     .top-stats {
@@ -52,15 +55,14 @@ st.markdown("""
         font-size: 20px;
         font-weight: 700;
         color: #1b381b;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
         margin-top: 4px;
     }
 
-    /* 分类胶囊样式 */
     div[data-testid="stPills"] button {
         border-radius: 20px !important;
         border: none !important;
-        background-color: #f0f2f0 !important;
+        background-color: #e8eae8 !important;
         color: #333333 !important;
         font-size: 13px !important;
         padding: 4px 12px !important;
@@ -71,46 +73,51 @@ st.markdown("""
     }
 
     /* ========================================================= */
-    /* 卡片容器：强制单行，弹性布局 */
+    /* 核心卡片布局：强制单行，最右侧留给按钮 */
     /* ========================================================= */
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) {
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: nowrap !important;
+        flex-wrap: nowrap !important; /* 绝对禁止换行 */
         align-items: center !important;
-        background-color: #ffffff !important;
-        border-radius: 18px !important;
-        padding: 12px 14px !important;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04) !important;
-        border: 1px solid #f2f4f2 !important;
-        margin-bottom: 12px !important;
-        gap: 6px !important; /* 按钮之间的间距，可调小使其更紧凑 */
+        justify-content: space-between !important;
+        background-color: #ffffff;
+        border-radius: 18px;
+        padding: 10px 8px 10px 10px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        border: 1px solid #f2f4f2;
+        margin-bottom: 12px;
+        gap: 6px !important; /* 按钮之间的微小间距 */
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
-    /* ========================================================= */
-    /* 第 1 列 (内容区)：撑满剩余空间，把按钮全挤到最右边 */
-    /* ========================================================= */
-    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(1) {
-        flex: 1 1 0% !important; 
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"] {
         width: auto !important;
         min-width: 0 !important;
-        margin-right: auto !important; /* 强制向右推挤 */
+        flex: none !important;
+        padding: 0 !important;
     }
 
-    /* ========================================================= */
-    /* 第 2, 3, 4 列 (按钮区)：死死锁住 32px 宽度，绝不换行 */
-    /* ========================================================= */
-    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(n+2) {
+    /* 第 1 列：左侧图片与文本区（自适应拉伸并截断超长文字） */
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(1) {
+        flex: 1 1 auto !important;
+        width: 100% !important;
+        overflow: hidden !important;
+    }
+    
+    /* 第 2, 3, 4 列：右侧三个按钮的严格定宽 */
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(2),
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(3),
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(4) {
         flex: 0 0 32px !important;
         width: 32px !important;
-        min-width: 32px !important;
         display: flex !important;
         justify-content: center !important;
-        align-items: center !important;
     }
 
     /* ========================================================= */
-    /* 统一按钮样式：纯正圆形、实心、无边框 */
+    /* 按钮外观重置：纯圆、无边框、强制文字/图标变白 */
     /* ========================================================= */
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) button {
         border-radius: 50% !important;
@@ -120,37 +127,49 @@ st.markdown("""
         padding: 0 !important;
         margin: 0 !important;
         border: none !important;
-        font-weight: 700 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
+    }
+
+    /* 暴力覆盖 Streamlit 原生字体颜色 */
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) button * {
+        color: #ffffff !important;
+        font-weight: 800 !important;
         line-height: 1 !important;
-        color: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
-    /* 去掉点击时的闪烁边框 */
-    div[data-testid="stHorizontalBlock"]:has(.card-left-box) button:focus,
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) button:active {
-        box-shadow: none !important;
-        outline: none !important;
-        opacity: 0.8;
+        opacity: 0.7 !important;
+        transform: scale(0.92) !important;
     }
 
-    /* 1. 黑色【详情】按钮 (第 2 列) */
+    /* 🔴【黑色】详情按钮 */
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(2) button {
         background-color: #2c2c2e !important;
-        font-size: 15px !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(2) button * {
+        font-size: 16px !important;
+        font-family: serif !important;
+        font-style: italic !important;
     }
 
-    /* 2. 绿色【＋】号按钮 (第 3 列) */
+    /* 🟢【绿色】＋号按钮 */
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(3) button {
         background-color: #34c759 !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(3) button * {
         font-size: 20px !important;
     }
 
-    /* 3. 红色【－】号按钮 (第 4 列) */
+    /* 🔴【红色】－号按钮 */
     div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(4) button {
         background-color: #ff3b30 !important;
+    }
+    div[data-testid="stHorizontalBlock"]:has(.card-left-box) > div[data-testid="column"]:nth-child(4) button * {
         font-size: 20px !important;
     }
 
@@ -160,9 +179,8 @@ st.markdown("""
     .card-left-box {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         width: 100%;
-        overflow: hidden;
     }
     .card-img {
         width: 52px;
@@ -170,13 +188,12 @@ st.markdown("""
         border-radius: 12px;
         object-fit: cover;
         flex-shrink: 0;
-        background-color: #f8f8f8;
+        background-color: #f0f0f0;
     }
-    .card-info {
+    .card-text-col {
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        overflow: hidden;
+        min-width: 0; /* 防止子元素撑破父级 */
     }
     .cpw-price {
         font-size: 16px;
@@ -184,6 +201,8 @@ st.markdown("""
         color: #1c1c1e;
         margin-bottom: 2px;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .sub-info {
         font-size: 12px;
@@ -193,7 +212,6 @@ st.markdown("""
         text-overflow: ellipsis;
     }
 
-    /* 详情页专属区块 */
     .detail-box {
         background-color: #ffffff;
         border-radius: 16px;
@@ -428,15 +446,15 @@ else:
                 avg_cost = price / wear_count if wear_count > 0 else price
                 img_b64 = get_image_base64(img_path)
 
-                # 将每张卡片划分为四列，比例不重要，由于底层 CSS 已重写，
-                # 第 1 列会自动占据最大空间并把后面 3 列完全挤到右侧
-                c1, c2, c3, c4 = st.columns([1, 0.1, 0.1, 0.1], vertical_alignment="center")
+                # 使用比例划分：左侧信息区占满，右侧预留出足够的按钮空间
+                c1, c2, c3, c4 = st.columns([0.65, 0.11, 0.12, 0.12], vertical_alignment="center")
 
                 with c1:
+                    # 使用 card-text-col 限制文本宽度自动截断，保护右侧按钮不被挤压
                     st.markdown(f"""
                     <div class="card-left-box">
                         <img src="data:image/jpeg;base64,{img_b64}" class="card-img">
-                        <div class="card-info">
+                        <div class="card-text-col">
                             <div class="cpw-price">¥{avg_cost:.2f}/次</div>
                             <div class="sub-info">¥{price:.0f} 已穿 {wear_count} 次</div>
                         </div>
@@ -444,17 +462,20 @@ else:
                     """, unsafe_allow_html=True)
 
                 with c2:
-                    if st.button("ⓘ", key=f"det_{cid}"):
+                    # 黑色的详情按钮 (CSS控制变为圆形)
+                    if st.button("i", key=f"det_{cid}"):
                         st.session_state.selected_id = cid
                         st.rerun()
 
                 with c3:
+                    # 绿色的 + 号按钮
                     if st.button("＋", key=f"add_{cid}"):
                         update_wear_count(cid, 1)
                         st.toast("已记录穿着！", icon="👕")
                         st.rerun()
 
                 with c4:
+                    # 红色的 - 号按钮
                     if st.button("－", key=f"sub_{cid}", disabled=(wear_count <= 0)):
                         update_wear_count(cid, -1)
                         st.toast("已撤回穿着！")
