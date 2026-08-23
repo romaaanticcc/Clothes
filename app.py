@@ -83,14 +83,14 @@ st.markdown("""
         justify-content: space-between;
         background-color: #ffffff;
         border-radius: 18px;
-        padding: 10px 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        border: 1px solid #edf2ed;
+        padding: 10px 14px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e8ede8;
         margin-bottom: 10px;
         width: 100%;
         box-sizing: border-box;
         min-height: 72px;
-        gap: 6px;
+        gap: 8px;
     }
 
     /* 左侧：图片 + 文字 */
@@ -144,7 +144,6 @@ st.markdown("""
         align-items: center;
         gap: 5px;
         flex-shrink: 0;
-        margin-left: 4px;
     }
 
     /* 所有按钮统一样式：圆形、无边框、阴影 */
@@ -165,6 +164,7 @@ st.markdown("""
         transition: all 0.1s ease !important;
         cursor: pointer !important;
         line-height: 1 !important;
+        font-size: 18px !important;
     }
 
     .card-right-buttons button:active {
@@ -175,7 +175,7 @@ st.markdown("""
     /* 黑色详情按钮 (i) */
     .btn-black button {
         background-color: #2c2c2e !important;
-        font-size: 15px !important;
+        font-size: 14px !important;
         font-family: Georgia, serif !important;
         font-style: italic !important;
     }
@@ -199,6 +199,54 @@ st.markdown("""
         transform: none !important;
     }
 
+    /* 隐藏 Streamlit 默认的按钮多余样式 */
+    .stButton > button {
+        border-radius: 50% !important;
+    }
+
+    /* 确保列内没有额外间距 */
+    .row-widget.stColumns {
+        gap: 0 !important;
+    }
+    .row-widget.stColumns > div {
+        padding: 0 !important;
+        padding-left: 2px !important;
+        padding-right: 2px !important;
+    }
+
+    /* 确保卡片在手机上宽度拉满 */
+    @media (max-width: 640px) {
+        .uniform-card {
+            padding: 8px 10px;
+            min-height: 62px;
+        }
+        .card-img {
+            width: 46px;
+            height: 46px;
+        }
+        .cpw-price {
+            font-size: 13px;
+        }
+        .sub-info {
+            font-size: 10px;
+        }
+        .card-right-buttons button {
+            width: 28px !important;
+            height: 28px !important;
+            min-height: 28px !important;
+            font-size: 15px !important;
+        }
+        .btn-black button {
+            font-size: 12px !important;
+        }
+        .btn-green button, .btn-red button {
+            font-size: 17px !important;
+        }
+        .card-right-buttons {
+            gap: 3px;
+        }
+    }
+
     /* 详情页样式 */
     .detail-box {
         background-color: #ffffff;
@@ -218,46 +266,6 @@ st.markdown("""
     }
     .detail-row:last-child {
         border-bottom: none;
-    }
-
-    /* 隐藏 Streamlit 默认的按钮多余样式 */
-    .stButton > button {
-        border-radius: 50% !important;
-    }
-
-    /* 确保列内没有额外间距 */
-    .row-widget.stColumns {
-        gap: 0 !important;
-    }
-    .row-widget.stColumns > div {
-        padding: 0 !important;
-    }
-
-    /* 确保卡片在手机上宽度拉满 */
-    @media (max-width: 640px) {
-        .uniform-card {
-            padding: 8px 10px;
-            min-height: 66px;
-        }
-        .card-img {
-            width: 48px;
-            height: 48px;
-        }
-        .cpw-price {
-            font-size: 14px;
-        }
-        .card-right-buttons button {
-            width: 30px !important;
-            height: 30px !important;
-            min-height: 30px !important;
-            font-size: 16px !important;
-        }
-        .btn-black button {
-            font-size: 13px !important;
-        }
-        .btn-green button, .btn-red button {
-            font-size: 17px !important;
-        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -460,7 +468,7 @@ else:
 
         st.markdown(f"""
         <div class="top-stats">
-            <span>👕 {total_items} 件</span>
+            <span>👕 {total_items}</span>
             <span>💰 ¥{total_spent:,.0f}</span>
         </div>
         """, unsafe_allow_html=True)
@@ -481,26 +489,26 @@ else:
                 avg_cost = price / wear_count if wear_count > 0 else price
                 img_b64 = get_image_base64(img_path)
 
-                # 卡片 HTML：左侧图片+文字，右侧留空给按钮
+                # 🔥 关键：使用 HTML 卡片 + 内联按钮（通过 st.columns 精确放置）
                 st.markdown(f"""
                 <div class="uniform-card">
                     <div class="card-left-group">
                         <img src="data:image/jpeg;base64,{img_b64}" class="card-img">
                         <div class="card-text-box">
                             <div class="cpw-price">¥{avg_cost:.2f}/次</div>
-                            <div class="sub-info">¥{price:.0f} · {wear_count}次</div>
+                            <div class="sub-info">¥{price:.0f} · 已穿 {wear_count} 次</div>
                         </div>
                     </div>
                     <div class="card-right-buttons" id="btn-group-{cid}"></div>
                 </div>
                 """, unsafe_allow_html=True)
 
-                # 使用 columns 将三个按钮放在卡片右侧预留位置
-                # 比例分配：左侧留空占位，右侧三个按钮各占相等空间
-                _, col_i, col_plus, col_minus = st.columns([0.55, 0.13, 0.13, 0.13])
+                # 🔥 使用 4 列：1个占位列 + 3个按钮列，让按钮紧贴右侧
+                # 占位列比例 0.45，三个按钮各占 0.15，总和 0.9，留一点边距
+                col_spacer, col_det, col_add, col_sub = st.columns([0.45, 0.15, 0.15, 0.15])
 
                 # 黑色详情按钮 (i)
-                with col_i:
+                with col_det:
                     st.markdown('<div class="btn-black">', unsafe_allow_html=True)
                     if st.button("i", key=f"det_{cid}"):
                         st.session_state.selected_id = cid
@@ -508,7 +516,7 @@ else:
                     st.markdown('</div>', unsafe_allow_html=True)
 
                 # 绿色 +1 按钮
-                with col_plus:
+                with col_add:
                     st.markdown('<div class="btn-green">', unsafe_allow_html=True)
                     if st.button("＋", key=f"add_{cid}"):
                         update_wear_count(cid, 1)
@@ -517,7 +525,7 @@ else:
                     st.markdown('</div>', unsafe_allow_html=True)
 
                 # 红色 -1 按钮（穿着次数为0时禁用）
-                with col_minus:
+                with col_sub:
                     st.markdown('<div class="btn-red">', unsafe_allow_html=True)
                     if st.button("－", key=f"sub_{cid}", disabled=(wear_count <= 0)):
                         update_wear_count(cid, -1)
